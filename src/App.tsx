@@ -3,12 +3,13 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
 import {
   Menu, X, ArrowRight, ArrowUpRight, ArrowUp, ChevronUp,
   Globe, Palette, Wrench, Mountain, HeartHandshake,
-  Mail, Phone, MapPin, CheckCircle2, ChevronDown
+  Mail, Phone, MapPin, CheckCircle2, ChevronDown, Quote
 } from 'lucide-react';
 
 import avatarImg from './assets/images/regenerated_image_1779087486989.png';
 import brandLogo from './assets/images/logo.png';
 import siteAtelierImg from './assets/images/site_atelier.png';
+import siteBoulangerieImg from './assets/images/site_boulangerie.png';
 import MentionsLegales from './MentionsLegales';
 import Preloader from './Preloader';
 
@@ -40,7 +41,10 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastType, setToastType] = useState<"success" | "error" | "info">("success");
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Parallax refs
   const heroRef = useRef(null);
@@ -62,15 +66,71 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+    
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const message = formData.get('message') as string;
+
+    const newErrors: Record<string, string> = {};
+    if (!name || name.trim().length < 2) {
+      newErrors.name = "Le nom doit comporter au moins 2 caractères.";
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      newErrors.email = "Veuillez entrer une adresse email valide.";
+    }
+    if (!message || message.trim().length < 10) {
+      newErrors.message = "Votre message doit comporter au moins 10 caractères.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setFormErrors(newErrors);
+      return;
+    }
+
+    setFormErrors({});
     setIsSubmitting(true);
-    setTimeout(() => { 
+
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/lagencedescott@gmail.com", {
+        method: "POST",
+        headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          message,
+          _subject: "Nouveau message de L'Agence de Scott",
+          _captcha: "false"
+        })
+      });
+
+      if (response.ok) {
+        setToastType("success");
+        setToastMessage("Message envoyé avec succès !");
+        setShowToast(true); 
+        form.reset(); 
+        setTimeout(() => setShowToast(false), 4000); 
+      } else {
+        setToastType("info");
+        setToastMessage("Veuillez consulter votre boîte mail ou réessayer plus tard.");
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 6000);
+      }
+    } catch (error) {
+      setToastType("error");
+      setToastMessage("Erreur réseau (FormSubmit indisponible). Veuillez réessayer plus tard.");
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 5000);
+    } finally {
       setIsSubmitting(false); 
-      setShowToast(true); 
-      (e.target as HTMLFormElement).reset(); 
-      setTimeout(() => setShowToast(false), 4000); 
-    }, 1500);
+    }
   };
 
   return (
@@ -93,19 +153,19 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
             </div>
           </button>
           
-          <div className="hidden md:flex items-center gap-10">
+          <div className="hidden lg:flex items-center gap-6 xl:gap-10">
             {['Services', 'A propos', 'Realisations'].map((item) => (
               <button key={item} onClick={() => scrollTo(item.toLowerCase().replace(' ', ''))} className="text-sm font-bold uppercase tracking-wider text-slate-300 hover:text-sun-400 transition-colors relative group">
                 {item}
                 <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-sun-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
               </button>
             ))}
-            <button onClick={() => scrollTo('contact')} className="bg-white hover:bg-sun-400 hover:text-navy-900 text-navy-900 text-sm font-bold px-8 py-3 rounded-full transition-all duration-300 flex items-center gap-2 group">
+            <button onClick={() => scrollTo('contact')} className="bg-white hover:bg-sun-400 hover:text-navy-900 text-navy-900 text-sm font-bold px-6 xl:px-8 py-3 rounded-full transition-all duration-300 flex items-center gap-2 group">
               Lancer mon projet <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
 
-          <button className="md:hidden z-50 text-white p-2" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          <button className="lg:hidden z-50 text-white p-2" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
             {isMobileMenuOpen ? <X className="w-8 h-8" /> : <Menu className="w-8 h-8" />}
           </button>
         </div>
@@ -114,7 +174,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
       {/* Fullscreen Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="fixed inset-0 z-30 bg-navy-900 flex flex-col px-6 pt-32 pb-10 md:hidden overflow-y-auto">
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="fixed inset-0 z-30 bg-navy-900 flex flex-col px-6 pt-32 pb-10 lg:hidden overflow-y-auto">
             <div className="flex flex-col gap-8 mt-4 sm:mt-10">
               {['Services', 'A propos', 'Realisations', 'Contact'].map((item, i) => (
                 <motion.button 
@@ -149,7 +209,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sun-500/20 rounded-full blur-[120px]"></div>
         </div>
 
-        <motion.div style={{ y: yHeroText, opacity: opacityHero }} className="relative z-10 w-full max-w-[90rem] mx-auto px-6 mt-20 flex flex-col items-center text-center">
+        <motion.div style={{ y: yHeroText, opacity: opacityHero }} className="relative z-10 w-full max-w-[90rem] mx-auto px-6 mt-32 lg:mt-40 flex flex-col items-center text-center">
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, ease: "easeOut" }} className="mb-6">
             <span className="inline-block py-2 px-4 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-xs font-bold uppercase tracking-widest text-slate-300">
               Agence Digitale • Saint-Amarin
@@ -250,6 +310,30 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
         </div>
       </section>
 
+      {/* Processus */}
+      <section id="processus" className="py-32 relative text-white bg-navy-900 border-t border-white/5">
+        <div className="max-w-[90rem] mx-auto px-6">
+          <div className="text-center mb-20">
+            <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight">MA <span className="text-outline">MÉTHODOLOGIE.</span></h2>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto mt-6">Un processus simple, clair et humain pour mener à bien votre projet.</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { num: "01", title: "Rencontre & Découverte", desc: "On se rencontre (autour d'un café ou en visio) pour bien comprendre vos besoins, votre histoire, et définir les contours du projet." },
+              { num: "02", title: "Conception", desc: "Je passe à la création technique ou graphique. Vous êtes impliqué à chaque étape décisive pour s'assurer qu'on va dans la bonne direction." },
+              { num: "03", title: "Livraison", desc: "Mise en ligne, tests finaux et formation. Je reste toujours disponible pour une question ou une petite modification par la suite." }
+            ].map((step, i) => (
+              <motion.div key={step.num} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.2 }} className="bg-white/5 border border-white/10 p-10 rounded-[2rem] relative overflow-hidden group">
+                <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 text-[120px] font-display font-black text-white/[0.03] group-hover:text-sun-500/[0.1] transition-colors">{step.num}</div>
+                <h3 className="font-bold text-2xl mb-4 text-sun-400">{step.title}</h3>
+                <p className="text-slate-400 leading-relaxed relative z-10">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* About (Sticky Scroll Layout) */}
       <section id="apropos" className="py-32 relative text-white bg-navy-800">
         <div className="max-w-[90rem] mx-auto px-6">
@@ -325,12 +409,12 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
             </motion.a>
 
             {/* Project 2 */}
-            <motion.a href="#" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="border-t border-b border-white/10 py-12 md:py-16 group relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer">
+            <motion.a href="https://nutala.github.io/boulangerie-marion/" target="_blank" rel="noopener noreferrer" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="border-t border-b border-white/10 py-12 md:py-16 group relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer">
               <div className="z-10 relative">
-                <h3 className="font-display text-4xl md:text-6xl font-bold text-white group-hover:text-leaf-400 transition-colors duration-300">Boulangerie Alsacienne</h3>
+                <h3 className="font-display text-4xl md:text-6xl font-bold text-white group-hover:text-leaf-400 transition-colors duration-300">Boulangerie Marion</h3>
                 <div className="flex gap-4 mt-6">
-                  <span className="px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest text-slate-300 group-hover:border-leaf-400 transition-colors">Identité Visuelle</span>
-                  <span className="px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest text-slate-300 group-hover:border-leaf-400 transition-colors">Print</span>
+                  <span className="px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest text-slate-300 group-hover:border-leaf-400 transition-colors">Site Vitrine</span>
+                  <span className="px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest text-slate-300 group-hover:border-leaf-400 transition-colors">Maquette</span>
                 </div>
               </div>
               <div className="z-10 bg-white/5 p-4 rounded-full group-hover:bg-leaf-400 group-hover:text-navy-900 transition-colors md:block hidden">
@@ -339,10 +423,38 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
               
               {/* Hover Image */}
               <div className="absolute top-1/2 left-2/3 -translate-x-1/2 -translate-y-1/2 w-[70vw] md:w-[600px] aspect-[4/3] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none scale-95 group-hover:scale-100 z-0">
-                <img src="https://picsum.photos/seed/artisan-bakery-brand/1200/900" alt="Boulangerie" className="w-full h-full object-cover rounded-3xl" />
+                <img src={siteBoulangerieImg} alt="Boulangerie Marion" className="w-full h-full object-cover rounded-3xl" />
                 <div className="absolute inset-0 bg-navy-900/40 rounded-3xl mix-blend-multiply"></div>
               </div>
             </motion.a>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section id="temoignages" className="py-32 bg-navy-900 border-t border-white/5">
+        <div className="max-w-[90rem] mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
+            <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 md:mb-0">ILS ME FONT<br/><span className="text-outline">CONFIANCE.</span></h2>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            {[
+              { text: "Jordan a su comprendre exactement ce dont nous avions besoin pour notre boulangerie. Le site est magnifique et très bien référencé. Un vrai pro, toujours à l'écoute et disponible.", name: "Marc D.", role: "Artisan Boulanger", img: "https://picsum.photos/seed/marc/100/100" },
+              { text: "La constante disponibilité de Jordan et ses conseils avisés m'ont permis de refondre l'identité de ma boutique sereinement. C'est rassurant d'avoir quelqu'un de compétent à proximité.", name: "Mélissa S.", role: "Créatrice, L'Atelier de Scarlett", img: "https://picsum.photos/seed/melissa/100/100" }
+            ].map((t, i) => (
+              <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.2 }} className="bg-white/5 border border-white/10 p-10 md:p-12 rounded-[2rem] flex flex-col justify-between hover:bg-white/10 transition-colors">
+                <Quote className="w-12 h-12 text-sun-500 mb-8 opacity-50" />
+                <p className="text-xl md:text-2xl font-light text-slate-300 leading-relaxed mb-10 italic relative z-10">"{t.text}"</p>
+                <div className="flex items-center gap-4 mt-auto">
+                  <img src={t.img} alt={t.name} className="w-14 h-14 rounded-full object-cover grayscale" />
+                  <div>
+                    <h4 className="font-bold text-lg text-white">{t.name}</h4>
+                    <p className="text-sun-400 text-sm font-bold uppercase tracking-wider">{t.role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -379,27 +491,32 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
 
             {/* Right Col / Form */}
             <div className="flex items-center">
-              <form onSubmit={handleSubmit} className="w-full space-y-8">
+              <form onSubmit={handleSubmit} className="w-full space-y-8" noValidate>
                 <div className="space-y-6">
                   <div className="relative group">
-                    <input type="text" id="name" required className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors" placeholder="Nom" />
+                    <input type="text" id="name" name="name" required className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors" placeholder="Nom" onChange={() => setFormErrors(prev => ({...prev, name: ''}))} />
                     <label htmlFor="name" className="absolute left-0 top-4 text-xl text-slate-500 peer-focus:-translate-y-8 peer-focus:text-sm peer-focus:text-sun-500 peer-valid:-translate-y-8 peer-valid:text-sm peer-valid:text-slate-400 transition-all pointer-events-none font-bold">Votre Nom</label>
+                    {formErrors.name && <span className="text-red-500 text-sm mt-1 absolute -bottom-5 left-0">{formErrors.name}</span>}
                   </div>
                   
-                  <div className="relative group">
-                    <input type="email" id="email" required className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors" placeholder="Email" />
-                    <label htmlFor="email" className="absolute left-0 top-4 text-xl text-slate-500 peer-focus:-translate-y-8 peer-focus:text-sm peer-focus:text-sun-500 peer-valid:-translate-y-8 peer-valid:text-sm peer-valid:text-slate-400 transition-all pointer-events-none font-bold">Email</label>
+                  <div className="relative group pt-2">
+                    <input type="email" id="email" name="email" required className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors" placeholder="Email" onChange={() => setFormErrors(prev => ({...prev, email: ''}))} />
+                    <label htmlFor="email" className="absolute left-0 top-6 text-xl text-slate-500 peer-focus:top-0 peer-focus:text-sm peer-focus:text-sun-500 peer-valid:top-0 peer-valid:text-sm peer-valid:text-slate-400 transition-all pointer-events-none font-bold">Email</label>
+                    {formErrors.email && <span className="text-red-500 text-sm mt-1 absolute -bottom-5 left-0">{formErrors.email}</span>}
                   </div>
                   
-                  <div className="relative group pt-4">
-                    <textarea id="message" required rows={3} className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors resize-none" placeholder="Message"></textarea>
-                    <label htmlFor="message" className="absolute left-0 top-8 text-xl text-slate-500 peer-focus:top-0 peer-focus:text-sm peer-focus:text-sun-500 peer-valid:top-0 peer-valid:text-sm peer-valid:text-slate-400 transition-all pointer-events-none font-bold">Parlez-moi de votre projet</label>
+                  <div className="relative group pt-6">
+                    <textarea id="message" name="message" required rows={3} className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors resize-none" placeholder="Message" onChange={() => setFormErrors(prev => ({...prev, message: ''}))}></textarea>
+                    <label htmlFor="message" className="absolute left-0 top-10 text-xl text-slate-500 peer-focus:top-4 peer-focus:text-sm peer-focus:text-sun-500 peer-valid:top-4 peer-valid:text-sm peer-valid:text-slate-400 transition-all pointer-events-none font-bold">Parlez-moi de votre projet</label>
+                    {formErrors.message && <span className="text-red-500 text-sm mt-1 absolute -bottom-5 left-0">{formErrors.message}</span>}
                   </div>
                 </div>
 
-                <button type="submit" disabled={isSubmitting} className="w-full py-6 md:py-8 bg-sun-500 hover:bg-white text-navy-900 font-bold text-2xl uppercase tracking-widest rounded-[2rem] transition-all duration-300 disabled:opacity-50 mt-8">
-                  {isSubmitting ? 'ENVOI...' : 'Envoyer'}
-                </button>
+                <div className="pt-4">
+                  <button type="submit" disabled={isSubmitting} className="w-full py-6 md:py-8 bg-sun-500 hover:bg-white text-navy-900 font-bold text-2xl uppercase tracking-widest rounded-[2rem] transition-all duration-300 disabled:opacity-50 mt-4">
+                    {isSubmitting ? 'ENVOI...' : 'Envoyer'}
+                  </button>
+                </div>
               </form>
             </div>
           </div>
@@ -448,13 +565,13 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
       {/* Toast */}
       <AnimatePresence>
         {showToast && (
-          <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} className="fixed bottom-24 right-8 sm:bottom-10 sm:right-auto sm:left-10 z-50 bg-white text-navy-900 rounded-2xl px-8 py-5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-sun-500 flex items-center justify-center">
-              <CheckCircle2 className="w-6 h-6 text-white" />
+          <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} className="fixed bottom-24 right-8 sm:bottom-10 sm:right-auto sm:left-10 z-50 bg-white text-navy-900 rounded-2xl px-6 py-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-4 max-w-sm">
+            <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center ${toastType === 'success' ? 'bg-sun-500' : toastType === 'error' ? 'bg-red-500' : 'bg-blue-500'}`}>
+              {toastType === 'success' ? <CheckCircle2 className="w-6 h-6 text-white" /> : <div className="text-white font-bold text-xl">!</div>}
             </div>
             <div>
-              <p className="font-bold text-lg">Message envoyé !</p>
-              <p className="text-sm font-medium text-slate-500">Je reviens vers vous sous 24h.</p>
+              <p className="font-bold text-lg leading-tight">Notification</p>
+              <p className="text-sm font-medium text-slate-500 mt-0.5 leading-snug">{toastMessage}</p>
             </div>
           </motion.div>
         )}
