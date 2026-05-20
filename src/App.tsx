@@ -295,8 +295,8 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
         <motion.div style={{ y: yHeroText, opacity: opacityHero }} className="relative z-10 w-full max-w-[90rem] mx-auto px-6 mt-32 lg:mt-40 flex flex-col items-center text-center">
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, ease: "easeOut" }} className="mb-6">
             <span className="inline-block py-2 px-4 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-xs font-bold uppercase tracking-widest text-slate-300">
-              Agence Digitale • Saint-Amarin
-            </span>
+               Artisan du Digital • Saint-Amarin
+             </span>
           </motion.div>
           
           <h1 className="font-display text-[15vw] md:text-[12vw] font-black leading-[0.85] tracking-tighter w-full">
@@ -305,7 +305,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
           </h1>
           
           <motion.p initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.4 }} className="mt-12 text-xl md:text-2xl text-slate-400 font-light max-w-2xl text-center">
-            Création web, design graphique et assistance informatique. <strong className="text-white font-medium">Le digital à taille humaine.</strong>
+             Création de sites internet, design et assistance informatique dans la Vallée de la Thur. <strong className="text-white font-medium">Le digital à taille humaine, proche de chez vous.</strong>
           </motion.p>
           
           <motion.button onClick={() => scrollTo('services')} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1 }} className="mt-20 w-16 h-16 rounded-full border border-white/20 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/5 transition-all">
@@ -336,7 +336,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
                 <Globe className="w-12 h-12 text-sun-400 mb-10 group-hover:scale-110 transition-transform duration-500" />
                 <div>
                   <h3 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white leading-tight">Création<br/>Sites Web</h3>
-                  <p className="text-slate-400 text-lg md:text-xl max-w-md leading-relaxed mb-8">Vitrines, e-commerce, portfolios. Des sites sur-mesure, performants, accessibles et optimisés pour le référencement naturel.</p>
+                  <p className="text-slate-400 text-lg md:text-xl max-w-md leading-relaxed mb-8">Vitrines, e-commerce, portfolios. Des sites sur-mesure, performants, faciles à administrer par vous-même et optimisés pour vous rendre visible sur Google.</p>
                   <div className="flex flex-wrap gap-3">
                     {['Site Vitrine', 'Boutique en ligne', 'Sur-mesure', 'Clé en main'].map(tag => (
                       <span key={tag} className="px-5 py-2 rounded-full border border-white/10 bg-white/5 text-sm font-bold uppercase tracking-wider text-slate-300">{tag}</span>
@@ -354,7 +354,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
                 <Palette className="w-12 h-12 text-leaf-400 mb-10 group-hover:scale-110 transition-transform duration-500" />
                 <div>
                   <h3 className="font-display text-3xl md:text-4xl font-bold mb-6 text-white leading-tight">Design &<br/>Graphisme</h3>
-                  <p className="text-slate-400 text-lg mb-8 leading-relaxed">Identité visuelle, logos, et supports print pour une image qui vous ressemble vraiment.</p>
+                  <p className="text-slate-400 text-lg mb-8 leading-relaxed">Identité visuelle, logos, et supports de communication (cartes, flyers) pour créer un coup de cœur visuel et marquer les esprits.</p>
                   <button onClick={() => scrollTo('contact')} className="w-12 h-12 rounded-full bg-white text-navy-900 flex items-center justify-center group-hover:bg-leaf-400 transition-colors">
                     <ArrowUpRight className="w-6 h-6 group-hover:rotate-45 transition-transform duration-300" />
                   </button>
@@ -405,7 +405,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
             {[
               { num: "01", title: "Rencontre & Découverte", desc: "On se rencontre (autour d'un café ou en visio) pour bien comprendre vos besoins, votre histoire, et définir les contours du projet." },
               { num: "02", title: "Conception", desc: "Je passe à la création technique ou graphique. Vous êtes impliqué à chaque étape décisive pour s'assurer qu'on va dans la bonne direction." },
-              { num: "03", title: "Livraison", desc: "Mise en ligne, tests finaux et formation. Je reste toujours disponible pour une question ou une petite modification par la suite." }
+              { num: "03", title: "Lancement & Autonomie", desc: "Mise en ligne, tests finaux et formation pour être autonome. Je reste votre voisin disponible pour toute question ou évolution future." }
             ].map((step, i) => (
               <motion.div key={step.num} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.2 }} className="bg-white/5 border border-white/10 p-10 rounded-[2rem] relative overflow-hidden group">
                 <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 text-[120px] font-display font-black text-white/[0.03] group-hover:text-sun-500/[0.1] transition-colors">{step.num}</div>
@@ -439,7 +439,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
                   <h3 className="font-display text-3xl font-bold mb-6 text-sun-400">Le Numérique au Service de l'Humain</h3>
                   <div className="space-y-6 text-xl text-slate-300 font-light leading-relaxed">
                     <p>Je m'appelle <strong className="text-white font-medium">Jordan Schmidt</strong>, et je suis avant tout un habitant de la vallée. C'est ici, à Saint-Amarin, que j'ai choisi de poser mes valises — et mes compétences.</p>
-                    <p>Après des années à naviguer dans le monde du numérique, j'ai voulu créer quelque chose de différent : une agence où l'humain est au centre, où chaque projet est traité avec le soin d'un artisan, et où vous n'avez jamais affaire à un interlocuteur lointain.</p>
+                    <p>Après des années à naviguer dans le monde du numérique, j'ai voulu créer quelque chose de différent : une agence où l'humain est au centre, où chaque projet est traité avec le soin d'un artisan, et où vous n'avez jamais affaire à un interlocuteur lointain. Mon but est de rendre le web accessible aux commerces, artisans, gîtes et associations de notre vallée, sans les tarifs ni la complexité des grandes agences des villes.</p>
                     <p>Que vous ayez besoin d'un site web pour votre gîte, d'un logo pour votre commerce, ou simplement que votre ordinateur refuse de démarrer — je suis là, à quelques minutes de chez vous. <strong className="text-white font-medium italic">Le digital ne devrait jamais être une source de stress.</strong></p>
                   </div>
                 </div>
@@ -608,7 +608,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
 
                     <div className="pt-4">
                       <button type="submit" disabled={isSubmitting} className="w-full py-6 md:py-8 bg-sun-500 hover:bg-white text-navy-900 font-bold text-2xl uppercase tracking-widest rounded-[2rem] transition-all duration-300 disabled:opacity-50 mt-4">
-                        {isSubmitting ? 'ENVOI...' : 'Envoyer'}
+                        {isSubmitting ? 'ENVOI...' : 'Discuter de mon projet'}
                       </button>
                     </div>
                   </motion.form>
