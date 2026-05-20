@@ -117,6 +117,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmittedSuccessfully, setIsSubmittedSuccessfully] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<"success" | "error" | "info">("success");
@@ -151,6 +152,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
     const name = formData.get('name') as string;
     const email = formData.get('email') as string;
     const message = formData.get('message') as string;
+    const rgpd = formData.get('rgpd') as string;
 
     const newErrors: Record<string, string> = {};
     if (!name || name.trim().length < 2) {
@@ -162,6 +164,9 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
     }
     if (!message || message.trim().length < 10) {
       newErrors.message = "Votre message doit comporter au moins 10 caractères.";
+    }
+    if (!rgpd) {
+      newErrors.rgpd = "Vous devez accepter la politique de confidentialité.";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -193,6 +198,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
         setToastMessage("Message envoyé avec succès !");
         setShowToast(true); 
         form.reset(); 
+        setIsSubmittedSuccessfully(true);
         setTimeout(() => setShowToast(false), 4000); 
       } else {
         setToastType("info");
@@ -542,34 +548,114 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
             </div>
 
             {/* Right Col / Form */}
-            <div className="flex items-center">
-              <form onSubmit={handleSubmit} className="w-full space-y-8" noValidate>
-                <div className="space-y-6">
-                  <div className="relative group">
-                    <input type="text" id="name" name="name" required className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors" placeholder="Nom" onChange={() => setFormErrors(prev => ({...prev, name: ''}))} />
-                    <label htmlFor="name" className="absolute left-0 top-4 text-xl text-slate-500 peer-focus:-translate-y-8 peer-focus:text-sm peer-focus:text-sun-500 peer-[:not(:placeholder-shown)]:-translate-y-8 peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]:text-slate-400 transition-all pointer-events-none font-bold">Votre Nom</label>
-                    {formErrors.name && <span className="text-red-500 text-xs mt-1 block text-left">{formErrors.name}</span>}
-                  </div>
-                  
-                  <div className="relative group pt-2">
-                    <input type="email" id="email" name="email" required className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors" placeholder="Email" onChange={() => setFormErrors(prev => ({...prev, email: ''}))} />
-                    <label htmlFor="email" className="absolute left-0 top-6 text-xl text-slate-500 peer-focus:top-0 peer-focus:text-sm peer-focus:text-sun-500 peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]:text-slate-400 transition-all pointer-events-none font-bold">Email</label>
-                    {formErrors.email && <span className="text-red-500 text-xs mt-1 block text-left">{formErrors.email}</span>}
-                  </div>
-                  
-                  <div className="relative group pt-6">
-                    <textarea id="message" name="message" required rows={3} className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors resize-none" placeholder="Message" onChange={() => setFormErrors(prev => ({...prev, message: ''}))}></textarea>
-                    <label htmlFor="message" className="absolute left-0 top-10 text-xl text-slate-500 peer-focus:top-4 peer-focus:text-sm peer-focus:text-sun-500 peer-[:not(:placeholder-shown)]:top-4 peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]:text-slate-400 transition-all pointer-events-none font-bold">Parlez-moi de votre projet</label>
-                    {formErrors.message && <span className="text-red-500 text-xs mt-1 block text-left">{formErrors.message}</span>}
-                  </div>
-                </div>
+            <div className="flex items-center justify-center min-h-[480px] w-full">
+              <AnimatePresence mode="wait">
+                {!isSubmittedSuccessfully ? (
+                  <motion.form 
+                    key="contact-form"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    onSubmit={handleSubmit} 
+                    className="w-full space-y-8" 
+                    noValidate
+                  >
+                    <div className="space-y-6">
+                      <div className="relative group">
+                        <input type="text" id="name" name="name" required className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors" placeholder="Nom" onChange={() => setFormErrors(prev => ({...prev, name: ''}))} />
+                        <label htmlFor="name" className="absolute left-0 top-4 text-xl text-slate-500 peer-focus:-translate-y-8 peer-focus:text-sm peer-focus:text-sun-500 peer-[:not(:placeholder-shown)]:-translate-y-8 peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]:text-slate-400 transition-all pointer-events-none font-bold">Votre Nom</label>
+                        {formErrors.name && <span className="text-red-500 text-xs mt-1 block text-left">{formErrors.name}</span>}
+                      </div>
+                      
+                      <div className="relative group pt-2">
+                        <input type="email" id="email" name="email" required className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors" placeholder="Email" onChange={() => setFormErrors(prev => ({...prev, email: ''}))} />
+                        <label htmlFor="email" className="absolute left-0 top-6 text-xl text-slate-500 peer-focus:top-0 peer-focus:text-sm peer-focus:text-sun-500 peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]:text-slate-400 transition-all pointer-events-none font-bold">Email</label>
+                        {formErrors.email && <span className="text-red-500 text-xs mt-1 block text-left">{formErrors.email}</span>}
+                      </div>
+                      
+                      <div className="relative group pt-6">
+                        <textarea id="message" name="message" required rows={3} className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors resize-none" placeholder="Message" onChange={() => setFormErrors(prev => ({...prev, message: ''}))}></textarea>
+                        <label htmlFor="message" className="absolute left-0 top-10 text-xl text-slate-500 peer-focus:top-4 peer-focus:text-sm peer-focus:text-sun-500 peer-[:not(:placeholder-shown)]:top-4 peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]:text-slate-400 transition-all pointer-events-none font-bold">Parlez-moi de votre projet</label>
+                        {formErrors.message && <span className="text-red-500 text-xs mt-1 block text-left">{formErrors.message}</span>}
+                      </div>
+                    </div>
 
-                <div className="pt-4">
-                  <button type="submit" disabled={isSubmitting} className="w-full py-6 md:py-8 bg-sun-500 hover:bg-white text-navy-900 font-bold text-2xl uppercase tracking-widest rounded-[2rem] transition-all duration-300 disabled:opacity-50 mt-4">
-                    {isSubmitting ? 'ENVOI...' : 'Envoyer'}
-                  </button>
-                </div>
-              </form>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3 pt-2 text-left">
+                        <input 
+                          type="checkbox" 
+                          id="rgpd" 
+                          name="rgpd" 
+                          required 
+                          className="mt-1 w-5 h-5 shrink-0 rounded border-white/20 bg-transparent text-sun-500 focus:ring-sun-500 accent-sun-500 cursor-pointer"
+                          onChange={() => setFormErrors(prev => ({...prev, rgpd: ''}))}
+                        />
+                        <label htmlFor="rgpd" className="text-sm text-slate-400 select-none cursor-pointer">
+                          J'accepte que mes données soient traitées conformément aux{' '}
+                          <button 
+                            type="button" 
+                            onClick={onShowMentions} 
+                            className="text-sun-400 hover:text-white underline font-bold"
+                          >
+                            mentions légales
+                          </button>{' '}
+                          dans le but exclusif de répondre à ma demande.
+                        </label>
+                      </div>
+                      {formErrors.rgpd && <span className="text-red-500 text-xs block text-left mt-1">{formErrors.rgpd}</span>}
+                    </div>
+
+                    <div className="pt-4">
+                      <button type="submit" disabled={isSubmitting} className="w-full py-6 md:py-8 bg-sun-500 hover:bg-white text-navy-900 font-bold text-2xl uppercase tracking-widest rounded-[2rem] transition-all duration-300 disabled:opacity-50 mt-4">
+                        {isSubmitting ? 'ENVOI...' : 'Envoyer'}
+                      </button>
+                    </div>
+                  </motion.form>
+                ) : (
+                  <motion.div 
+                    key="success-message"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] p-10 md:p-14 text-center flex flex-col items-center justify-center min-h-[480px]"
+                  >
+                    <motion.div 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 150, damping: 15, delay: 0.1 }}
+                      className="w-20 h-20 rounded-full bg-sun-500 flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(202,110,13,0.4)]"
+                    >
+                      <svg className="w-10 h-10 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
+                        <motion.path 
+                          initial={{ pathLength: 0 }} 
+                          animate={{ pathLength: 1 }} 
+                          transition={{ duration: 0.5, delay: 0.3, ease: "easeInOut" }}
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          d="M5 13l4 4L19 7" 
+                        />
+                      </svg>
+                    </motion.div>
+                    
+                    <h3 className="font-display text-3xl font-bold text-white mb-6">
+                      Message envoyé !
+                    </h3>
+                    
+                    <p className="text-slate-300 text-lg leading-relaxed mb-10 max-w-md">
+                      Merci pour votre intérêt. Jordan a bien reçu vos informations et prendra contact avec vous très prochainement pour échanger sur votre projet.
+                    </p>
+                    
+                    <button 
+                      onClick={() => setIsSubmittedSuccessfully(false)} 
+                      className="px-8 py-4 bg-white/15 hover:bg-white/20 text-white font-bold rounded-full transition-colors border border-white/10"
+                    >
+                      Envoyer un autre message
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>
