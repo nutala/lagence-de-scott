@@ -8,15 +8,21 @@ interface Props {
 
 export default function MentionsLegales({ onClose }: Props) {
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
   }, []);
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="min-h-screen bg-navy-900 text-slate-300 py-12 px-6 sm:px-12 md:px-24"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 50 }}
+      transition={{ type: "spring", damping: 25, stiffness: 200 }}
+      className="fixed inset-0 z-50 bg-navy-900 text-slate-300 py-12 px-6 sm:px-12 md:px-24 overflow-y-auto"
     >
       <div className="max-w-4xl mx-auto">
         <button

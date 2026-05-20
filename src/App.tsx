@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
+import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from 'motion/react';
 import {
   Menu, X, ArrowRight, ArrowUpRight, ArrowUp, ChevronUp,
   Globe, Palette, Wrench, Mountain, HeartHandshake,
@@ -17,11 +17,11 @@ const Marquee = ({ text, reverse = false, className = "" }: { text: string[], re
   return (
     <div className={`flex overflow-hidden whitespace-nowrap py-6 relative z-20 ${className}`}>
       <motion.div 
-        animate={{ x: reverse ? ["-50%", "0%"] : ["0%", "-50%"] }}
+        animate={{ x: reverse ? ["-25%", "0%"] : ["0%", "-25%"] }}
         transition={{ repeat: Infinity, ease: "linear", duration: 40 }}
         className="flex gap-8 items-center text-white/50 font-display font-bold text-4xl md:text-6xl uppercase tracking-widest"
       >
-        {[...Array(2)].map((_, i) => (
+        {[...Array(4)].map((_, i) => (
           <React.Fragment key={i}>
             {text.map((item, j) => (
               <React.Fragment key={`${i}-${j}`}>
@@ -33,6 +33,83 @@ const Marquee = ({ text, reverse = false, className = "" }: { text: string[], re
         ))}
       </motion.div>
     </div>
+  );
+};
+
+const ProjectItem = ({ 
+  href, 
+  title, 
+  tags, 
+  img, 
+  accentColor = "sun" 
+}: { 
+  href: string, 
+  title: string, 
+  tags: string[], 
+  img: string, 
+  accentColor?: "sun" | "leaf" 
+}) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const springConfig = { damping: 25, stiffness: 150 };
+  const xSpring = useSpring(x, springConfig);
+  const ySpring = useSpring(y, springConfig);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    x.set(e.clientX - rect.left - 300); // Centered relative to image width (600px)
+    y.set(e.clientY - rect.top - 170);  // Centered relative to image height (340px)
+  };
+
+  const hoverColorClass = accentColor === "sun" ? "group-hover:text-sun-500" : "group-hover:text-leaf-400";
+  const buttonHoverColorClass = accentColor === "sun" ? "group-hover:bg-sun-500" : "group-hover:bg-leaf-400";
+  const tagHoverColorClass = accentColor === "sun" ? "group-hover:border-sun-500" : "group-hover:border-leaf-400";
+
+  return (
+    <motion.a 
+      href={href} 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      onMouseMove={handleMouseMove}
+      initial={{ opacity: 0, y: 20 }} 
+      whileInView={{ opacity: 1, y: 0 }} 
+      viewport={{ once: true }} 
+      className="border-t border-white/10 py-12 md:py-16 group relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer"
+    >
+      <div className="z-10 relative">
+        <h3 className={`font-display text-4xl md:text-6xl font-bold text-white ${hoverColorClass} transition-colors duration-300`}>
+          {title}
+        </h3>
+        <div className="flex gap-4 mt-6">
+          {tags.map(tag => (
+            <span key={tag} className={`px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest text-slate-300 ${tagHoverColorClass} transition-colors`}>
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className={`z-10 bg-white/5 p-4 rounded-full ${buttonHoverColorClass} group-hover:text-navy-900 transition-colors md:block hidden`}>
+        <ArrowRight className="w-8 h-8 -rotate-45" />
+      </div>
+      
+      {/* Cursor Following Image */}
+      <motion.div 
+        style={{ 
+          x: xSpring, 
+          y: ySpring,
+        }}
+        className="absolute w-[600px] aspect-video opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 hidden md:block"
+      >
+        <img src={img} alt={title} className="w-full h-full object-cover rounded-3xl saturate-150" />
+        <div className="absolute inset-0 bg-navy-900/40 rounded-3xl mix-blend-multiply"></div>
+      </motion.div>
+
+      {/* Mobile inline preview image */}
+      <div className="w-full aspect-video md:hidden rounded-2xl overflow-hidden mt-4 z-10 border border-white/10">
+        <img src={img} alt={title} className="w-full h-full object-cover saturate-150" />
+      </div>
+    </motion.a>
   );
 };
 
@@ -235,7 +312,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
       <Marquee text={['Créatif', 'Digital', 'Humain', 'Proche', 'Local']} className="border-y border-white/5 bg-navy-800/20" />
 
       {/* Services (Bento) */}
-      <section id="services" className="py-32 relative">
+      <section id="services" className="py-32 relative scroll-mt-28">
         <div className="max-w-[90rem] mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
             <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight">
@@ -311,7 +388,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
       </section>
 
       {/* Processus */}
-      <section id="processus" className="py-32 relative text-white bg-navy-900 border-t border-white/5">
+      <section id="processus" className="py-32 relative text-white bg-navy-900 border-t border-white/5 scroll-mt-28">
         <div className="max-w-[90rem] mx-auto px-6">
           <div className="text-center mb-20">
             <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight">MA <span className="text-outline">MÉTHODOLOGIE.</span></h2>
@@ -335,7 +412,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
       </section>
 
       {/* About (Sticky Scroll Layout) */}
-      <section id="apropos" className="py-32 relative text-white bg-navy-800">
+      <section id="apropos" className="py-32 relative text-white bg-navy-800 scroll-mt-28">
         <div className="max-w-[90rem] mx-auto px-6">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-24 relative">
             
@@ -380,59 +457,34 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
       </section>
 
       {/* Projects List with Hover Image Reveal */}
-      <section id="realisations" className="py-32 bg-navy-900 border-t border-white/5">
+      <section id="realisations" className="py-32 bg-navy-900 border-t border-white/5 scroll-mt-28">
         <div className="max-w-[90rem] mx-auto px-6">
           <div className="mb-20">
             <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight mb-6">SÉLECTION<br/><span className="text-outline">DE PROJETS.</span></h2>
             <p className="text-xl text-slate-400 max-w-xl">Une approche artisanale pour des résultats qui font la différence.</p>
           </div>
 
-          <div className="flex flex-col">
-            {/* Project 1 */}
-            <motion.a href="https://latelierdescarlett.fr" target="_blank" rel="noopener noreferrer" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="border-t border-white/10 py-12 md:py-16 group relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer">
-              <div className="z-10 relative">
-                <h3 className="font-display text-4xl md:text-6xl font-bold text-white group-hover:text-sun-500 transition-colors duration-300">L'Atelier de Scarlett</h3>
-                <div className="flex gap-4 mt-6">
-                  <span className="px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest text-slate-300 group-hover:border-sun-500 transition-colors">Site Vitrine</span>
-                  <span className="px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest text-slate-300 group-hover:border-sun-500 transition-colors">Sur-mesure</span>
-                </div>
-              </div>
-              <div className="z-10 bg-white/5 p-4 rounded-full group-hover:bg-sun-500 group-hover:text-navy-900 transition-colors md:block hidden">
-                <ArrowRight className="w-8 h-8 -rotate-45" />
-              </div>
-              
-              {/* Hover Image */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vw] md:w-[600px] aspect-video opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none scale-95 group-hover:scale-100 z-0">
-                <img src={siteAtelierImg} alt="L'Atelier de Scarlett" className="w-full h-full object-cover rounded-3xl saturate-150" />
-                <div className="absolute inset-0 bg-navy-900/40 rounded-3xl mix-blend-multiply"></div>
-              </div>
-            </motion.a>
-
-            {/* Project 2 */}
-            <motion.a href="https://nutala.github.io/boulangerie-marion/" target="_blank" rel="noopener noreferrer" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="border-t border-b border-white/10 py-12 md:py-16 group relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer">
-              <div className="z-10 relative">
-                <h3 className="font-display text-4xl md:text-6xl font-bold text-white group-hover:text-leaf-400 transition-colors duration-300">Boulangerie Marion</h3>
-                <div className="flex gap-4 mt-6">
-                  <span className="px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest text-slate-300 group-hover:border-leaf-400 transition-colors">Site Vitrine</span>
-                  <span className="px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold uppercase tracking-widest text-slate-300 group-hover:border-leaf-400 transition-colors">Maquette</span>
-                </div>
-              </div>
-              <div className="z-10 bg-white/5 p-4 rounded-full group-hover:bg-leaf-400 group-hover:text-navy-900 transition-colors md:block hidden">
-                <ArrowRight className="w-8 h-8 -rotate-45" />
-              </div>
-              
-              {/* Hover Image */}
-              <div className="absolute top-1/2 left-2/3 -translate-x-1/2 -translate-y-1/2 w-[70vw] md:w-[600px] aspect-[4/3] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none scale-95 group-hover:scale-100 z-0">
-                <img src={siteBoulangerieImg} alt="Boulangerie Marion" className="w-full h-full object-cover rounded-3xl" />
-                <div className="absolute inset-0 bg-navy-900/40 rounded-3xl mix-blend-multiply"></div>
-              </div>
-            </motion.a>
+          <div className="flex flex-col border-b border-white/10">
+            <ProjectItem 
+              href="https://latelierdescarlett.fr" 
+              title="L'Atelier de Scarlett" 
+              tags={['Site Vitrine', 'Sur-mesure']} 
+              img={siteAtelierImg} 
+              accentColor="sun"
+            />
+            <ProjectItem 
+              href="https://nutala.github.io/boulangerie-marion/" 
+              title="Boulangerie Marion" 
+              tags={['Site Vitrine', 'Maquette']} 
+              img={siteBoulangerieImg} 
+              accentColor="leaf"
+            />
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
-      <section id="temoignages" className="py-32 bg-navy-900 border-t border-white/5">
+      <section id="temoignages" className="py-32 bg-navy-900 border-t border-white/5 scroll-mt-28">
         <div className="max-w-[90rem] mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
             <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 md:mb-0">ILS ME FONT<br/><span className="text-outline">CONFIANCE.</span></h2>
@@ -460,7 +512,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-32 relative flex items-center bg-navy-800">
+      <section id="contact" className="py-32 relative flex items-center bg-navy-800 scroll-mt-28">
         <div className="absolute inset-0 bg-sun-500 mix-blend-overlay opacity-5"></div>
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-sun-500/20 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3"></div>
 
@@ -495,20 +547,20 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
                 <div className="space-y-6">
                   <div className="relative group">
                     <input type="text" id="name" name="name" required className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors" placeholder="Nom" onChange={() => setFormErrors(prev => ({...prev, name: ''}))} />
-                    <label htmlFor="name" className="absolute left-0 top-4 text-xl text-slate-500 peer-focus:-translate-y-8 peer-focus:text-sm peer-focus:text-sun-500 peer-valid:-translate-y-8 peer-valid:text-sm peer-valid:text-slate-400 transition-all pointer-events-none font-bold">Votre Nom</label>
-                    {formErrors.name && <span className="text-red-500 text-sm mt-1 absolute -bottom-5 left-0">{formErrors.name}</span>}
+                    <label htmlFor="name" className="absolute left-0 top-4 text-xl text-slate-500 peer-focus:-translate-y-8 peer-focus:text-sm peer-focus:text-sun-500 peer-[:not(:placeholder-shown)]:-translate-y-8 peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]:text-slate-400 transition-all pointer-events-none font-bold">Votre Nom</label>
+                    {formErrors.name && <span className="text-red-500 text-xs mt-1 block text-left">{formErrors.name}</span>}
                   </div>
                   
                   <div className="relative group pt-2">
                     <input type="email" id="email" name="email" required className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors" placeholder="Email" onChange={() => setFormErrors(prev => ({...prev, email: ''}))} />
-                    <label htmlFor="email" className="absolute left-0 top-6 text-xl text-slate-500 peer-focus:top-0 peer-focus:text-sm peer-focus:text-sun-500 peer-valid:top-0 peer-valid:text-sm peer-valid:text-slate-400 transition-all pointer-events-none font-bold">Email</label>
-                    {formErrors.email && <span className="text-red-500 text-sm mt-1 absolute -bottom-5 left-0">{formErrors.email}</span>}
+                    <label htmlFor="email" className="absolute left-0 top-6 text-xl text-slate-500 peer-focus:top-0 peer-focus:text-sm peer-focus:text-sun-500 peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]:text-slate-400 transition-all pointer-events-none font-bold">Email</label>
+                    {formErrors.email && <span className="text-red-500 text-xs mt-1 block text-left">{formErrors.email}</span>}
                   </div>
                   
                   <div className="relative group pt-6">
                     <textarea id="message" name="message" required rows={3} className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors resize-none" placeholder="Message" onChange={() => setFormErrors(prev => ({...prev, message: ''}))}></textarea>
-                    <label htmlFor="message" className="absolute left-0 top-10 text-xl text-slate-500 peer-focus:top-4 peer-focus:text-sm peer-focus:text-sun-500 peer-valid:top-4 peer-valid:text-sm peer-valid:text-slate-400 transition-all pointer-events-none font-bold">Parlez-moi de votre projet</label>
-                    {formErrors.message && <span className="text-red-500 text-sm mt-1 absolute -bottom-5 left-0">{formErrors.message}</span>}
+                    <label htmlFor="message" className="absolute left-0 top-10 text-xl text-slate-500 peer-focus:top-4 peer-focus:text-sm peer-focus:text-sun-500 peer-[:not(:placeholder-shown)]:top-4 peer-[:not(:placeholder-shown)]:text-sm peer-[:not(:placeholder-shown)]:text-slate-400 transition-all pointer-events-none font-bold">Parlez-moi de votre projet</label>
+                    {formErrors.message && <span className="text-red-500 text-xs mt-1 block text-left">{formErrors.message}</span>}
                   </div>
                 </div>
 
@@ -589,14 +641,14 @@ export default function App() {
       <AnimatePresence>
         {isLoading && <Preloader key="preloader" onComplete={() => setIsLoading(false)} />}
       </AnimatePresence>
-      <AnimatePresence mode="wait">
+      
+      <MainContent onShowMentions={() => setShowMentions(true)} />
+      
+      <AnimatePresence>
         {showMentions && (
           <MentionsLegales onClose={() => setShowMentions(false)} />
         )}
       </AnimatePresence>
-      {!showMentions && (
-        <MainContent onShowMentions={() => setShowMentions(true)} />
-      )}
     </>
   );
 }

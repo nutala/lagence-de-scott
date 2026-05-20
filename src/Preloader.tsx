@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 
 interface Props {
   onComplete: () => void;
+  key?: string;
 }
 
 export default function Preloader({ onComplete }: Props) {
