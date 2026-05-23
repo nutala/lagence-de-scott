@@ -679,7 +679,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
           <div className="flex gap-8 text-sm font-bold tracking-wider text-slate-400 uppercase">
             <button onClick={onShowMentions} className="hover:text-white transition-colors uppercase font-bold text-sm tracking-wider">Mentions Légales</button>
             <a href="https://www.instagram.com/lagencedescott" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>
-            <a href="#" className="hover:text-white transition-colors">Facebook</a>
+            <a href="https://www.facebook.com/profile.php?id=61590341791637" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Facebook</a>
           </div>
         </div>
       </footer>
