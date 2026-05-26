@@ -293,8 +293,8 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
               ))}
             </div>
             <div className="mt-auto pt-10 border-t border-white/10 flex flex-col gap-4">
-              <a href="mailto:lagencedescott@gmail.com" className="text-lg sm:text-xl font-bold text-white flex items-center gap-3">
-                <Mail className="w-5 h-5 text-sun-500" /> lagencedescott@gmail.com
+              <a href="mailto:contact@lagencedescott.fr" className="text-lg sm:text-xl font-bold text-white flex items-center gap-3">
+                <Mail className="w-5 h-5 text-sun-500" /> contact@lagencedescott.fr
               </a>
               <a href="tel:+33664821835" className="text-lg sm:text-xl font-bold text-white flex items-center gap-3">
                 <Phone className="w-5 h-5 text-sun-500" /> 06 64 82 18 35
@@ -554,8 +554,8 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
               <div className="space-y-8 text-2xl font-light">
                 <p className="text-slate-300 max-w-lg">Parlez-moi de votre projet. Un devis, un conseil ou juste pour se rencontrer, je suis à votre écoute.</p>
                 <div className="flex flex-col gap-4 font-bold">
-                  <a href="mailto:lagencedescott@gmail.com" className="text-sun-400 hover:text-white transition-colors w-fit group">
-                    lagencedescott@gmail.com
+                  <a href="mailto:contact@lagencedescott.fr" className="text-sun-400 hover:text-white transition-colors w-fit group">
+                    contact@lagencedescott.fr
                     <span className="block w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
                   </a>
                   <a href="tel:+33664821835" className="text-white hover:text-sun-400 transition-colors w-fit">

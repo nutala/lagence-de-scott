@@ -43,7 +43,7 @@ export default function MentionsLegales({ onClose }: Props) {
               Résidant à : Saint-Amarin<br />
               Statut : Entreprise en cours de création.<br />
               Téléphone : 06 64 82 18 35<br />
-              Email : <a href="mailto:lagencedescott@gmail.com" className="text-sun-500 hover:underline">lagencedescott@gmail.com</a>
+              Email : <a href="mailto:contact@lagencedescott.fr" className="text-sun-500 hover:underline">contact@lagencedescott.fr</a>
             </p>
           </section>
 
@@ -72,7 +72,7 @@ export default function MentionsLegales({ onClose }: Props) {
             <h2 className="text-2xl font-display font-bold text-white mb-4">4. Données personnelles</h2>
             <p>
               Les informations recueillies via le formulaire de contact (nom, email, message) sont destinées uniquement à <strong>Jordan Schmidt</strong> dans le but exclusif de pouvoir répondre à vos demandes de contact ou de devis.<br />
-              Conformément à la loi « Informatique et Libertés », vous disposez d'un droit d'accès, de rectification et d'opposition aux données vous concernant en nous contactant à l'adresse email : <a href="mailto:lagencedescott@gmail.com" className="text-sun-500 hover:underline">lagencedescott@gmail.com</a>.
+              Conformément à la loi « Informatique et Libertés », vous disposez d'un droit d'accès, de rectification et d'opposition aux données vous concernant en nous contactant à l'adresse email : <a href="mailto:contact@lagencedescott.fr" className="text-sun-500 hover:underline">contact@lagencedescott.fr</a>.
             </p>
           </section>
         </div>
