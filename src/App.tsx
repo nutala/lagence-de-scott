@@ -43,7 +43,7 @@ const ProjectItem = ({
   img, 
   accentColor = "sun" 
 }: { 
-  href: string, 
+  href?: string, 
   title: string, 
   tags: string[], 
   img: string, 
@@ -56,7 +56,7 @@ const ProjectItem = ({
   const xSpring = useSpring(x, springConfig);
   const ySpring = useSpring(y, springConfig);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     x.set(e.clientX - rect.left - 300); // Centered relative to image width (600px)
     y.set(e.clientY - rect.top - 170);  // Centered relative to image height (340px)
@@ -66,17 +66,8 @@ const ProjectItem = ({
   const buttonHoverColorClass = accentColor === "sun" ? "group-hover:bg-sun-500" : "group-hover:bg-leaf-400";
   const tagHoverColorClass = accentColor === "sun" ? "group-hover:border-sun-500" : "group-hover:border-leaf-400";
 
-  return (
-    <motion.a 
-      href={href} 
-      target="_blank" 
-      rel="noopener noreferrer" 
-      onMouseMove={handleMouseMove}
-      initial={{ opacity: 0, y: 20 }} 
-      whileInView={{ opacity: 1, y: 0 }} 
-      viewport={{ once: true }} 
-      className="border-t border-white/10 py-12 md:py-16 group relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer"
-    >
+  const content = (
+    <>
       <div className="z-10 relative">
         <h3 className={`font-display text-4xl md:text-6xl font-bold text-white ${hoverColorClass} transition-colors duration-300`}>
           {title}
@@ -89,9 +80,11 @@ const ProjectItem = ({
           ))}
         </div>
       </div>
-      <div className={`z-10 bg-white/5 p-4 rounded-full ${buttonHoverColorClass} group-hover:text-navy-900 transition-colors md:block hidden`}>
-        <ArrowRight className="w-8 h-8 -rotate-45" />
-      </div>
+      {href && (
+        <div className={`z-10 bg-white/5 p-4 rounded-full ${buttonHoverColorClass} group-hover:text-navy-900 transition-colors md:block hidden`}>
+          <ArrowRight className="w-8 h-8 -rotate-45" />
+        </div>
+      )}
       
       {/* Cursor Following Image */}
       <motion.div 
@@ -109,7 +102,36 @@ const ProjectItem = ({
       <div className="w-full aspect-video md:hidden rounded-2xl overflow-hidden mt-4 z-10 border border-white/10">
         <img src={img} alt={title} className="w-full h-full object-cover saturate-150" />
       </div>
-    </motion.a>
+    </>
+  );
+
+  if (href) {
+    return (
+      <motion.a 
+        href={href} 
+        target="_blank" 
+        rel="noopener noreferrer" 
+        onMouseMove={handleMouseMove}
+        initial={{ opacity: 0, y: 20 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }} 
+        className="border-t border-white/10 py-12 md:py-16 group relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer"
+      >
+        {content}
+      </motion.a>
+    );
+  }
+
+  return (
+    <motion.div 
+      onMouseMove={handleMouseMove}
+      initial={{ opacity: 0, y: 20 }} 
+      whileInView={{ opacity: 1, y: 0 }} 
+      viewport={{ once: true }} 
+      className="border-t border-white/10 py-12 md:py-16 group relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6"
+    >
+      {content}
+    </motion.div>
   );
 };
 
@@ -479,9 +501,8 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
               accentColor="sun"
             />
             <ProjectItem 
-              href="https://nutala.github.io/boulangerie-marion/" 
-              title="Boulangerie Marion" 
-              tags={['Site Vitrine', 'Maquette']} 
+              title="Le Fournil d'Émilie" 
+              tags={['Prototype', 'Maquette']} 
               img={siteBoulangerieImg} 
               accentColor="leaf"
             />
