@@ -320,7 +320,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
           </motion.div>
           
           <h1 className="font-display text-[15vw] md:text-[12vw] font-black leading-[0.85] tracking-tighter w-full">
-            <motion.span initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }} className="block text-outline opacity-50 relative pr-[10%]">L'AGENCE</motion.span>
+            <motion.span initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.1, ease: [0.16, 1, 0.3, 1] }} className="block text-outline opacity-50 relative pr-[10%]">L'AGENCE</motion.span>{' '}
             <motion.span initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }} className="block text-white relative z-10">DE SCOTT</motion.span>
           </h1>
           
