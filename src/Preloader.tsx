@@ -14,7 +14,7 @@ export default function Preloader({ onComplete }: Props) {
     const timer = setTimeout(() => {
       onComplete();
       document.body.style.overflow = 'auto';
-    }, 2000);
+    }, 800);
 
     return () => {
       clearTimeout(timer);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, FormEvent } from 'react';
+import React, { useState, useEffect, useRef, FormEvent, lazy, Suspense } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from 'motion/react';
 import {
   Menu, X, ArrowRight, ArrowUpRight, ArrowUp, ChevronUp,
@@ -6,11 +6,11 @@ import {
   Mail, Phone, MapPin, CheckCircle2, ChevronDown, Quote
 } from 'lucide-react';
 
-import avatarImg from './assets/images/regenerated_image_1779087486989.png';
-import brandLogo from './assets/images/logo.png';
-import siteAtelierImg from './assets/images/site_atelier.png';
-import siteBoulangerieImg from './assets/images/site_boulangerie.png';
-import MentionsLegales from './MentionsLegales';
+import avatarImg from './assets/images/regenerated_image_1779087486989.jpg';
+import brandLogo from './assets/images/logo.jpg';
+import siteAtelierImg from './assets/images/site_atelier.jpg';
+import siteBoulangerieImg from './assets/images/site_boulangerie.jpg';
+const MentionsLegales = lazy(() => import('./MentionsLegales'));
 import Preloader from './Preloader';
 
 const Marquee = ({ text, reverse = false, className = "" }: { text: string[], reverse?: boolean, className?: string }) => {
@@ -94,13 +94,13 @@ const ProjectItem = ({
         }}
         className="absolute w-[600px] aspect-video opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 hidden md:block"
       >
-        <img src={img} alt={title} className="w-full h-full object-cover rounded-3xl saturate-150" />
+        <img src={img} alt={title} className="w-full h-full object-cover rounded-3xl saturate-150" loading="lazy" decoding="async" />
         <div className="absolute inset-0 bg-navy-900/40 rounded-3xl mix-blend-multiply"></div>
       </motion.div>
 
       {/* Mobile inline preview image */}
       <div className="w-full aspect-video md:hidden rounded-2xl overflow-hidden mt-4 z-10 border border-white/10">
-        <img src={img} alt={title} className="w-full h-full object-cover saturate-150" />
+        <img src={img} alt={title} className="w-full h-full object-cover saturate-150" loading="lazy" decoding="async" />
       </div>
     </>
   );
@@ -449,7 +449,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
               <div className="sticky top-32">
                 <h2 className="font-display text-5xl md:text-7xl font-bold tracking-tight mb-8">VOTRE<br/>VOISIN<br/><span className="text-leaf-400">DIGITAL.</span></h2>
                 <div className="aspect-[4/5] rounded-[2rem] overflow-hidden rotate-[-2deg] hover:rotate-0 transition-transform duration-700 shadow-2xl border border-white/10">
-                  <img src={avatarImg} alt="Jordan Schmidt" className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-700" />
+                  <img src={avatarImg} alt="Jordan Schmidt" className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-700" loading="lazy" decoding="async" />
                 </div>
               </div>
             </div>
@@ -526,7 +526,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
                 <Quote className="w-12 h-12 text-sun-500 mb-8 opacity-50" />
                 <p className="text-xl md:text-2xl font-light text-slate-300 leading-relaxed mb-10 italic relative z-10">"{t.text}"</p>
                 <div className="flex items-center gap-4 mt-auto">
-                  <img src={t.img} alt={t.name} className="w-14 h-14 rounded-full object-cover grayscale" />
+                  <img src={t.img} alt={t.name} className="w-14 h-14 rounded-full object-cover grayscale" loading="lazy" decoding="async" />
                   <div>
                     <h4 className="font-bold text-lg text-white">{t.name}</h4>
                     <p className="text-sun-400 text-sm font-bold uppercase tracking-wider">{t.role}</p>
@@ -751,11 +751,13 @@ export default function App() {
       
       <MainContent onShowMentions={() => setShowMentions(true)} />
       
-      <AnimatePresence>
-        {showMentions && (
-          <MentionsLegales onClose={() => setShowMentions(false)} />
-        )}
-      </AnimatePresence>
+      <Suspense fallback={null}>
+        <AnimatePresence>
+          {showMentions && (
+            <MentionsLegales onClose={() => setShowMentions(false)} />
+          )}
+        </AnimatePresence>
+      </Suspense>
     </>
   );
 }
