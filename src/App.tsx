@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 import avatarImg from './assets/images/regenerated_image_1779087486989.jpg';
-import brandLogo from './assets/images/logo.jpg';
+import brandLogo from './assets/images/logo_cropped.png';
 import siteAtelierImg from './assets/images/site_atelier.jpg';
 import siteBoulangerieImg from './assets/images/site_boulangerie.jpg';
 const MentionsLegales = lazy(() => import('./MentionsLegales'));
@@ -249,9 +249,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
       >
         <div className="max-w-[90rem] mx-auto px-6 flex items-center justify-between">
           <button onClick={() => scrollTo('hero')} className="flex items-center gap-3 group z-50">
-            <div className="w-14 h-14 md:w-20 md:h-20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500 bg-white/10 p-0 overflow-hidden shadow-lg border border-white/20">
-              <img src={brandLogo} alt="Logo L'Agence de Scott" className="w-full h-full object-cover scale-[1.2]" />
-            </div>
+            <img src={brandLogo} alt="Logo L'Agence de Scott" className="w-16 h-16 md:w-24 md:h-24 object-contain group-hover:scale-110 transition-transform duration-500" />
             <div className="flex flex-col items-start leading-none tracking-tight hidden sm:flex">
               <span className="font-display font-bold text-lg text-white uppercase bg-clip-text">L'Agence de Scott</span>
               <span className="text-[10px] uppercase tracking-[0.2em] text-sun-400 font-bold mt-1">Vallée de la Thur</span>
