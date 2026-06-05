@@ -41,7 +41,7 @@ export default function MentionsLegales({ onClose }: Props) {
               Le site <strong>L'Agence de Scott</strong> est édité par :<br />
               <strong>Jordan Schmidt</strong><br />
               Résidant à : Saint-Amarin<br />
-              Statut : Entreprise en cours de création.<br />
+              Statut : Micro-entrepreneur.<br />
               SIRET : 105 686 240 00018<br />
               Téléphone : 06 64 82 18 35<br />
               Email : <a href="mailto:contact@lagencedescott.fr" className="text-sun-500 hover:underline">contact@lagencedescott.fr</a>
