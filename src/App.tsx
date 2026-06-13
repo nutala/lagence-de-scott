@@ -10,6 +10,7 @@ import avatarImg from './assets/images/regenerated_image_1779087486989.jpg';
 import brandLogo from './assets/images/logo_cropped.png';
 import siteAtelierImg from './assets/images/site_atelier.jpg';
 import siteBoulangerieImg from './assets/images/site_boulangerie.jpg';
+import melissaImg from './assets/images/Melissa.jpg';
 const MentionsLegales = lazy(() => import('./MentionsLegales'));
 import Preloader from './Preloader';
 
@@ -518,7 +519,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
           <div className="grid md:grid-cols-2 gap-8">
             {[
               { text: "Jordan a su comprendre exactement ce dont nous avions besoin pour notre boulangerie. Le site est magnifique et très bien référencé. Un vrai pro, toujours à l'écoute et disponible.", name: "Marc D.", role: "Boulanger, Le Fournil d'Émilie", img: "https://picsum.photos/seed/marc/100/100" },
-              { text: "La constante disponibilité de Jordan et ses conseils avisés m'ont permis de refondre l'identité de ma boutique sereinement. C'est rassurant d'avoir quelqu'un de compétent à proximité.", name: "Mélissa S.", role: "Créatrice, L'Atelier de Scarlett", img: "https://picsum.photos/seed/melissa/100/100" }
+              { text: "La constante disponibilité de Jordan et ses conseils avisés m'ont permis de refondre l'identité de ma boutique sereinement. C'est rassurant d'avoir quelqu'un de compétent à proximité.", name: "Mélissa S.", role: "Créatrice, L'Atelier de Scarlett", img: melissaImg }
             ].map((t, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.2 }} className="bg-white/5 border border-white/10 p-10 md:p-12 rounded-[2rem] flex flex-col justify-between hover:bg-white/10 transition-colors">
                 <Quote className="w-12 h-12 text-sun-500 mb-8 opacity-50" />
