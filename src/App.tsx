@@ -518,7 +518,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
           
           <div className="grid md:grid-cols-2 gap-8">
             {[
-              { text: "Jordan a su comprendre exactement ce dont nous avions besoin pour notre boulangerie. Le site est magnifique et très bien référencé. Un vrai pro, toujours à l'écoute et disponible.", name: "Marc D.", role: "Boulanger, Le Fournil d'Émilie", img: "https://picsum.photos/seed/marc/100/100" },
+              { text: "Un grand merci à Jordan pour le site du Fournil ! Il a su traduire nos idées sans nous noyer dans le jargon technique. Le résultat est magnifique, le référencement est au top, et savoir qu'il est dispo juste à côté de chez nous, c'est super rassurant.", name: "Marc D.", role: "Boulanger, Le Fournil d'Émilie", img: "https://picsum.photos/seed/marc/100/100" },
               { text: "Jordan a su capter l'esprit de mon atelier de couture pour me créer un site vitrine magnifique et sur-mesure. Sa disponibilité et ses explications simples m'ont permis de suivre le projet sereinement. Un super pro de proximité !", name: "Mélissa S.", role: "Créatrice, L'Atelier de Scarlett", img: melissaImg }
             ].map((t, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.2 }} className="bg-white/5 border border-white/10 p-10 md:p-12 rounded-[2rem] flex flex-col justify-between hover:bg-white/10 transition-colors">
