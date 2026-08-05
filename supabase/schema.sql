@@ -66,6 +66,7 @@ create table if not exists public.factures (
   id uuid primary key default gen_random_uuid(),
   numero text unique not null,
   client_id uuid references public.clients(id) on delete cascade,
+  devis_id uuid references public.devis(id) on delete set null,
   titre text,
   montant numeric not null default 0,
   tva numeric not null default 20,

@@ -66,6 +66,7 @@ export interface Facture {
   id: string;
   numero: string;
   client_id: string | null;
+  devis_id: string | null;
   titre: string | null;
   montant: number;
   tva: number;

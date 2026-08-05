@@ -115,6 +115,7 @@
 .admin-root .form-group label{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
 .admin-root .form-group input,.admin-root .form-group select,.admin-root .form-group textarea{width:100%}
 .admin-root .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.admin-root .line-row{display:grid;grid-template-columns:1fr 70px 130px 34px;gap:8px;margin-bottom:8px;align-items:center}
 @keyframes adm-fade-in{from{opacity:0}to{opacity:1}}
 @keyframes adm-scale-in{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 
@@ -226,9 +227,13 @@
 .admin-root .header{padding:0 16px}
 .admin-root .header-title{font-size:15px}
 .admin-root .kanban{grid-template-columns:1fr}
-.admin-root .calendar{font-size:11px}
-.admin-root .cal-day{min-height:60px;padding:4px}
+.admin-root .card-body{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.admin-root table{min-width:640px}
+.admin-root .calendar-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.admin-root .calendar{min-width:560px}
 .admin-root .form-row{grid-template-columns:1fr}
+.admin-root .line-row{grid-template-columns:1fr 56px 92px 32px;gap:6px}
+.admin-root .line-row input{padding:8px 10px;font-size:13px}
 .admin-root .detail-header h1{font-size:20px}
 }
 @media(max-width:480px){

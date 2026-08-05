@@ -206,7 +206,7 @@ export default function AdminShell({ userEmail }: { userEmail: string }) {
           {page === 'clients' && <ClientsPage initialDetailId={detailId} setPage={navigate} />}
           {page === 'projets' && <ProjetsPage initialDetailId={detailId} setPage={navigate} />}
           {page === 'taches' && <TachesPage />}
-          {page === 'devis' && <DevisPage initialDetailId={detailId} />}
+          {page === 'devis' && <DevisPage initialDetailId={detailId} setPage={navigate} />}
           {page === 'factures' && <FacturesPage />}
           {page === 'planning' && <PlanningPage />}
           {page === 'settings' && <SettingsPage />}

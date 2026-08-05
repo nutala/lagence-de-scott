@@ -1,14 +1,14 @@
 import React, { useState, FormEvent, useEffect } from 'react';
-import { Plus, ArrowLeft, Trash2, Pencil, Printer, X } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, Pencil, Printer, X, Receipt } from 'lucide-react';
 import { useAdminData } from '../AdminDataContext';
 import { Modal, Badge, EmptyState } from '../components';
 import { formatEUR, formatDate, clientName, devisTotal, DEVIS_STATUTS } from '../types';
-import type { Devis, DevisLigne } from '../types';
+import type { Devis, DevisLigne, PageKey } from '../types';
 import { printInvoice } from '../pdf';
 
-export default function DevisPage({ initialDetailId = null }: { initialDetailId?: string | null }) {
+export default function DevisPage({ initialDetailId = null, setPage }: { initialDetailId?: string | null; setPage?: (p: PageKey) => void }) {
   const {
-    clients, devis, devisLignes, saveDevis, updateDevisStatut, deleteDevis,
+    clients, devis, devisLignes, factures, saveDevis, saveFacture, updateDevisStatut, deleteDevis,
     settings, notify, logActivite,
   } = useAdminData();
   const [selected, setSelected] = useState<string | null>(initialDetailId);
@@ -27,6 +27,7 @@ export default function DevisPage({ initialDetailId = null }: { initialDetailId?
     const lines = devisLignes.filter((l) => l.devis_id === d.id);
     const ht = devisTotal(devisLignes, d.id);
     const ttc = ht * (1 + Number(d.tva || 0) / 100);
+    const factureLiee = factures.find((f) => f.devis_id === d.id);
     return (
       <div className="page-enter">
         <div className="detail-header">
@@ -47,6 +48,35 @@ export default function DevisPage({ initialDetailId = null }: { initialDetailId?
               {DEVIS_STATUTS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
             <button className="btn btn-sm btn-primary" onClick={() => printInvoice({ type: 'devis', numero: d.numero, titre: d.titre, date: d.date, statut: d.statut, date2Label: 'Validité', date2Text: d.validite, client: clients.find((c) => c.id === d.client_id) ?? null, rows: lines, tva: d.tva, notes: d.notes, settings })}><Printer /> PDF</button>
+            {factureLiee ? (
+              <button className="btn btn-sm btn-secondary" onClick={() => setPage?.('factures')}><Receipt /> Voir la facture</button>
+            ) : (
+              <button
+                className="btn btn-sm btn-primary"
+                onClick={async () => {
+                  const today = new Date();
+                  const echeance = new Date(today.getTime() + 30 * 86400000).toISOString().slice(0, 10);
+                  await saveFacture(
+                    {
+                      client_id: d.client_id,
+                      titre: d.titre,
+                      date: today.toISOString().slice(0, 10),
+                      statut: 'Brouillon',
+                      tva: d.tva,
+                      notes: d.notes,
+                      echeance,
+                      devis_id: d.id,
+                    },
+                    lines,
+                  );
+                  notify('Facture créée');
+                  logActivite(`Facture créée depuis le devis ${d.numero}`);
+                  setPage?.('factures');
+                }}
+              >
+                <Receipt /> Créer la facture
+              </button>
+            )}
             <button className="btn btn-sm btn-secondary" onClick={() => setModal(d)}><Pencil /> Modifier</button>
             <button
               className="btn btn-sm btn-danger"
@@ -255,7 +285,7 @@ function DevisForm({
             </button>
           </div>
           {lignes.map((l, i) => (
-            <div key={i} className="form-row" style={{ marginBottom: 8, gridTemplateColumns: '1fr 70px 130px 34px' }}>
+            <div key={i} className="form-row line-row">
               <input placeholder="Description de la prestation" value={l.description} onChange={(e) => updateLigne(i, { description: e.target.value })} />
               <input type="number" min="0" step="any" placeholder="Qté" value={String(l.quantite)} onChange={(e) => updateLigne(i, { quantite: Number(e.target.value) })} />
               <input type="number" min="0" step="0.01" placeholder="Prix unitaire" value={String(l.prix_unitaire)} onChange={(e) => updateLigne(i, { prix_unitaire: Number(e.target.value) })} />

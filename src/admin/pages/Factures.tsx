@@ -7,7 +7,7 @@ import type { Facture, FactureLigne } from '../types';
 import { printInvoice } from '../pdf';
 
 export default function FacturesPage() {
-  const { clients, factures, facturesLignes, settings, saveFacture, updateFactureStatut, deleteFacture, notify, logActivite } = useAdminData();
+  const { clients, devis, factures, facturesLignes, settings, saveFacture, updateFactureStatut, deleteFacture, notify, logActivite } = useAdminData();
   const [modal, setModal] = useState<'new' | Facture | null>(null);
 
   const encaisse = factures.filter((f) => f.statut === 'Payée').reduce((s, f) => s + Number(f.montant), 0);
@@ -42,16 +42,18 @@ export default function FacturesPage() {
         <div className="card-body" style={{ padding: 0 }}>
           {factures.length ? (
             <table>
-              <thead><tr><th>N°</th><th>Client</th><th>Titre</th><th>Total TTC</th><th>Statut</th><th>Date</th><th>Échéance</th><th style={{ width: 130 }}>Actions</th></tr></thead>
+              <thead><tr><th>N°</th><th>Client</th><th>Origine</th><th>Titre</th><th>Total TTC</th><th>Statut</th><th>Date</th><th>Échéance</th><th style={{ width: 130 }}>Actions</th></tr></thead>
               <tbody>
                 {factures.map((f) => {
                   const lignes = facturesLignes.filter((l) => l.facture_id === f.id);
                   const tvaVal = Number(f.tva ?? 0);
                   const ttc = lignes.length ? facturesTotal(facturesLignes, f.id) * (1 + tvaVal / 100) : Number(f.montant);
+                  const dv = f.devis_id ? devis.find((x) => x.id === f.devis_id) : null;
                   return (
                     <tr key={f.id}>
                       <td style={{ fontWeight: 500, fontFamily: 'var(--font-display)' }}>{f.numero}</td>
                       <td>{clientName(clients, f.client_id)}</td>
+                      <td style={{ color: 'var(--muted)', fontSize: 13 }}>{dv ? `Devis ${dv.numero}` : '—'}</td>
                       <td style={{ color: 'var(--muted)' }}>{f.titre || '—'}</td>
                       <td style={{ fontWeight: 600 }}>{formatEUR(ttc)}</td>
                       <td>
@@ -168,7 +170,7 @@ function FactureForm({
       return;
     }
     onSave(
-      { client_id: clientId, titre, date, statut, tva: tvaVal, notes, echeance: echeance || null },
+      { client_id: clientId, titre, date, statut, tva: tvaVal, notes, echeance: echeance || null, devis_id: facture?.devis_id ?? null },
       lignes.filter((l) => l.description.trim()),
       facture?.id,
     );
@@ -203,7 +205,7 @@ function FactureForm({
             </button>
           </div>
           {lignes.map((l, i) => (
-            <div key={i} className="form-row" style={{ marginBottom: 8, gridTemplateColumns: '1fr 70px 130px 34px' }}>
+            <div key={i} className="form-row line-row">
               <input placeholder="Description de la prestation" value={l.description} onChange={(e) => updateLigne(i, { description: e.target.value })} />
               <input type="number" min="0" step="any" placeholder="Qté" value={String(l.quantite)} onChange={(e) => updateLigne(i, { quantite: Number(e.target.value) })} />
               <input type="number" min="0" step="0.01" placeholder="Prix unitaire" value={String(l.prix_unitaire)} onChange={(e) => updateLigne(i, { prix_unitaire: Number(e.target.value) })} />

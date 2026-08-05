@@ -56,28 +56,30 @@ export default function PlanningPage() {
         <button className="btn btn-sm btn-secondary" onClick={() => { setY(now.getFullYear()); setM(now.getMonth()); }}>Aujourd'hui</button>
       </div>
 
-      <div className="calendar">
-        {days.map((d) => <div className="cal-head" key={d}>{d}</div>)}
-        {cells.map((c, i) => {
-          const evts = c.date ? events.filter((e) => e.date === c.date) : [];
-          return (
-            <div
-              key={i}
-              className={`cal-day${c.other ? ' other' : ''}${c.date === today ? ' today' : ''}`}
-              onClick={() => c.date && setModal({ date: c.date })}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' && c.date) setModal({ date: c.date }); }}
-            >
-              <div className="cal-day-num">{c.day}</div>
-              {evts.map((e) => (
-                <div key={e.id} className={`cal-event ${e.type}`} onClick={(ev) => { ev.stopPropagation(); setModal({ event: e }); }}>
-                  {e.label}
-                </div>
-              ))}
-            </div>
-          );
-        })}
+      <div className="calendar-wrap">
+        <div className="calendar">
+          {days.map((d) => <div className="cal-head" key={d}>{d}</div>)}
+          {cells.map((c, i) => {
+            const evts = c.date ? events.filter((e) => e.date === c.date) : [];
+            return (
+              <div
+                key={i}
+                className={`cal-day${c.other ? ' other' : ''}${c.date === today ? ' today' : ''}`}
+                onClick={() => c.date && setModal({ date: c.date })}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' && c.date) setModal({ date: c.date }); }}
+              >
+                <div className="cal-day-num">{c.day}</div>
+                {evts.map((e) => (
+                  <div key={e.id} className={`cal-event ${e.type}`} onClick={(ev) => { ev.stopPropagation(); setModal({ event: e }); }}>
+                    {e.label}
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {modal && (
