@@ -79,7 +79,7 @@ export function buildInvoiceHtml(doc: InvoiceDoc): string {
       <div>
         <img src="${absLogo}" class="logo" alt="Logo">
         <h1>${type === 'devis' ? 'DEVIS' : 'FACTURE'} ${escapeHtml(numero)}</h1>
-        <div class="muted">${escapeHtml(agence)}</div>
+        <div style="font-size:17px;font-weight:700;margin:2px 0">${escapeHtml(agence)}</div>
         ${settings?.adresse ? `<div class="muted">${escapeHtml(settings.adresse)}</div>` : ''}
         <div class="muted">${escapeHtml(settings?.email ?? '')}${settings?.telephone ? ` · ${escapeHtml(settings.telephone)}` : ''}</div>
         ${settings?.siret ? `<div class="muted">SIRET : ${escapeHtml(settings.siret)}</div>` : ''}

@@ -66,11 +66,22 @@ create table if not exists public.factures (
   id uuid primary key default gen_random_uuid(),
   numero text unique not null,
   client_id uuid references public.clients(id) on delete cascade,
+  titre text,
   montant numeric not null default 0,
+  tva numeric not null default 20,
+  notes text,
   statut text not null default 'Brouillon',
   date date not null default current_date,
   echeance date,
   created_at timestamptz not null default now()
+);
+
+create table if not exists public.factures_lignes (
+  id uuid primary key default gen_random_uuid(),
+  facture_id uuid references public.factures(id) on delete cascade not null,
+  description text not null,
+  quantite numeric not null default 1,
+  prix_unitaire numeric not null default 0
 );
 
 create table if not exists public.planning_events (
@@ -111,6 +122,7 @@ alter table public.taches enable row level security;
 alter table public.devis enable row level security;
 alter table public.devis_lignes enable row level security;
 alter table public.factures enable row level security;
+alter table public.factures_lignes enable row level security;
 alter table public.planning_events enable row level security;
 alter table public.settings enable row level security;
 alter table public.activites enable row level security;
@@ -119,7 +131,7 @@ do $$
 declare t text;
 begin
   foreach t in array array[
-    'clients','projets','taches','devis','devis_lignes','factures',
+    'clients','projets','taches','devis','devis_lignes','factures','factures_lignes',
     'planning_events','settings','activites'
   ] loop
     execute format('create policy "allow_authenticated" on public.%I for all to authenticated using (true) with check (true);', t);

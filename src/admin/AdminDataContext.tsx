@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback, Rea
 import { supabase } from './supabaseClient';
 import { nextNumero } from './types';
 import type {
-  Client, Projet, Tache, Devis, DevisLigne, Facture, PlanningEvent, Settings, Activite,
+  Client, Projet, Tache, Devis, DevisLigne, Facture, FactureLigne, PlanningEvent, Settings, Activite,
 } from './types';
 
 interface AdminData {
@@ -14,6 +14,7 @@ interface AdminData {
   devis: Devis[];
   devisLignes: DevisLigne[];
   factures: Facture[];
+  facturesLignes: FactureLigne[];
   events: PlanningEvent[];
   settings: Settings | null;
   activites: Activite[];
@@ -36,7 +37,7 @@ interface AdminData {
   updateDevisStatut: (id: string, statut: string) => Promise<void>;
   deleteDevis: (id: string) => Promise<void>;
 
-  saveFacture: (fields: Omit<Facture, 'id' | 'created_at' | 'numero'>, id?: string) => Promise<void>;
+  saveFacture: (fields: Omit<Facture, 'id' | 'created_at' | 'numero' | 'montant'>, lignes: FactureLigne[], id?: string) => Promise<void>;
   updateFactureStatut: (id: string, statut: string) => Promise<void>;
   deleteFacture: (id: string) => Promise<void>;
 
@@ -63,6 +64,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   const [devis, setDevis] = useState<Devis[]>([]);
   const [devisLignes, setDevisLignes] = useState<DevisLigne[]>([]);
   const [factures, setFactures] = useState<Facture[]>([]);
+  const [facturesLignes, setFacturesLignes] = useState<FactureLigne[]>([]);
   const [events, setEvents] = useState<PlanningEvent[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [activites, setActivites] = useState<Activite[]>([]);
@@ -79,7 +81,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     try {
       const [
         rClients, rProjets, rTaches, rDevis, rLignes,
-        rFactures, rEvents, rSettings, rActivites,
+        rFactures, rFLignes, rEvents, rSettings, rActivites,
       ] = await Promise.all([
         supabase.from('clients').select('*').order('created_at', { ascending: true }),
         supabase.from('projets').select('*').order('created_at', { ascending: true }),
@@ -87,6 +89,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
         supabase.from('devis').select('*').order('date', { ascending: false }),
         supabase.from('devis_lignes').select('*'),
         supabase.from('factures').select('*').order('date', { ascending: false }),
+        supabase.from('factures_lignes').select('*'),
         supabase.from('planning_events').select('*').order('date', { ascending: true }),
         supabase.from('settings').select('*').limit(1).maybeSingle(),
         supabase.from('activites').select('*').order('created_at', { ascending: false }).limit(50),
@@ -97,6 +100,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
       setDevis(rDevis.error ? [] : (rDevis.data as Devis[]));
       setDevisLignes(rLignes.error ? [] : (rLignes.data as DevisLigne[]));
       setFactures(rFactures.error ? [] : (rFactures.data as Facture[]));
+      setFacturesLignes(rFLignes.error ? [] : (rFLignes.data as FactureLigne[]));
       setEvents(rEvents.error ? [] : (rEvents.data as PlanningEvent[]));
       setSettings(rSettings.error || !rSettings.data ? null : (rSettings.data as Settings));
       setActivites(rActivites.error ? [] : (rActivites.data as Activite[]));
@@ -203,14 +207,26 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     await refresh();
   }, [refresh]);
 
-  const saveFacture = useCallback(async (fields: Omit<Facture, 'id' | 'created_at' | 'numero'>, id?: string) => {
+  const saveFacture = useCallback(async (fields: Omit<Facture, 'id' | 'created_at' | 'numero'>, lignes: FactureLigne[], id?: string) => {
     if (!supabase) return;
+    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0);
+    const ht = cleanLignes.reduce((s, l) => s + Number(l.quantite) * Number(l.prix_unitaire), 0);
+    const tvaVal = Number(fields.tva || 0);
+    const montant = Math.round(ht * (1 + tvaVal / 100) * 100) / 100;
+    const payload = { ...fields, montant };
     if (id) {
-      await supabase.from('factures').update(fields).eq('id', id);
+      await supabase.from('factures').update(payload).eq('id', id);
+      await supabase.from('factures_lignes').delete().eq('facture_id', id);
+      if (cleanLignes.length) {
+        await supabase.from('factures_lignes').insert(cleanLignes.map((l) => ({ ...l, facture_id: id })));
+      }
     } else {
       const year = new Date().getFullYear();
       const numero = nextNumero('F-', year, factures.map((f) => f.numero));
-      await supabase.from('factures').insert({ ...fields, numero });
+      const { data } = await supabase.from('factures').insert({ ...payload, numero }).select().single();
+      if (data && cleanLignes.length) {
+        await supabase.from('factures_lignes').insert(cleanLignes.map((l) => ({ ...l, facture_id: data.id })));
+      }
     }
     await refresh();
   }, [refresh, factures]);
@@ -250,7 +266,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const value: AdminData = {
-    loading, error, clients, projets, taches, devis, devisLignes, factures,
+    loading, error, clients, projets, taches, devis, devisLignes, factures, facturesLignes,
     events, settings, activites, refresh, logActivite, notify, toast,
     saveClient, deleteClient, saveProjet, deleteProjet, saveTache,
     updateTacheStatut, deleteTache, saveDevis, updateDevisStatut, deleteDevis,

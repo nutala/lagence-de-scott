@@ -54,11 +54,22 @@ export interface DevisLigne {
   prix_unitaire: number;
 }
 
+export interface FactureLigne {
+  id?: string;
+  facture_id?: string | null;
+  description: string;
+  quantite: number;
+  prix_unitaire: number;
+}
+
 export interface Facture {
   id: string;
   numero: string;
   client_id: string | null;
+  titre: string | null;
   montant: number;
+  tva: number;
+  notes: string | null;
   statut: string;
   date: string;
   echeance: string | null;
@@ -184,6 +195,12 @@ export function projetTitle(projets: Projet[], id: string | null): string {
 export function devisTotal(lignes: DevisLigne[], devisId: string | null): number {
   return lignes
     .filter((l) => l.devis_id === devisId)
+    .reduce((s, l) => s + Number(l.quantite) * Number(l.prix_unitaire), 0);
+}
+
+export function facturesTotal(lignes: FactureLigne[], factureId: string | null): number {
+  return lignes
+    .filter((l) => l.facture_id === factureId)
     .reduce((s, l) => s + Number(l.quantite) * Number(l.prix_unitaire), 0);
 }
 
