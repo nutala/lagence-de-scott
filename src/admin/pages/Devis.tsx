@@ -3,7 +3,8 @@ import { Plus, ArrowLeft, Trash2, Pencil, Printer, X } from 'lucide-react';
 import { useAdminData } from '../AdminDataContext';
 import { Modal, Badge, EmptyState } from '../components';
 import { formatEUR, formatDate, clientName, devisTotal, DEVIS_STATUTS } from '../types';
-import type { Devis, DevisLigne, Settings } from '../types';
+import type { Devis, DevisLigne } from '../types';
+import { printInvoice } from '../pdf';
 
 export default function DevisPage({ initialDetailId = null }: { initialDetailId?: string | null }) {
   const {
@@ -45,7 +46,7 @@ export default function DevisPage({ initialDetailId = null }: { initialDetailId?
             >
               {DEVIS_STATUTS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-            <button className="btn btn-sm btn-primary" onClick={() => printDevis(d, lines, clientName(clients, d.client_id), settings)}><Printer /> PDF</button>
+            <button className="btn btn-sm btn-primary" onClick={() => printInvoice({ type: 'devis', numero: d.numero, titre: d.titre, date: d.date, statut: d.statut, date2Label: 'Validité', date2Text: d.validite, client: clients.find((c) => c.id === d.client_id) ?? null, rows: lines, tva: d.tva, notes: d.notes, settings })}><Printer /> PDF</button>
             <button className="btn btn-sm btn-secondary" onClick={() => setModal(d)}><Pencil /> Modifier</button>
             <button
               className="btn btn-sm btn-danger"
@@ -291,63 +292,4 @@ function DevisForm({
       </form>
     </Modal>
   );
-}
-
-export function printDevis(d: Devis, lines: DevisLigne[], clientNom: string, settings: Settings | null) {
-  const ht = devisTotal(lines, d.id);
-  const tvaVal = Number(d.tva || 0);
-  const ttc = ht * (1 + tvaVal / 100);
-  const agence = settings?.agence_nom || "L'Agence de Scott";
-  const rows = lines
-    .map(
-      (l) => `<tr>
-        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">${l.description}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right">${l.quantite}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right">${formatEUR(l.prix_unitaire)}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right"><strong>${formatEUR(Number(l.quantite) * Number(l.prix_unitaire))}</strong></td>
-      </tr>`,
-    )
-    .join('');
-
-  const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Devis ${d.numero}</title>
-  <style>
-    *{box-sizing:border-box}body{font-family:'Segoe UI',Arial,sans-serif;color:#111827;margin:0;padding:48px}
-    .head{display:flex;justify-content:space-between;border-bottom:2px solid #ca6e0d;padding-bottom:24px;margin-bottom:32px}
-    h1{font-size:26px;margin:0 0 4px}.muted{color:#6b7280;font-size:13px;margin:2px 0}
-    .box{font-size:13px;margin-bottom:24px}h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 8px}
-    table{width:100%;border-collapse:collapse;margin-top:8px}th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;padding:8px 12px;border-bottom:2px solid #e5e7eb}
-    .totals{margin-left:auto;width:280px;margin-top:24px}.totals div{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}
-    .totals .grand{font-weight:700;font-size:18px;border-top:2px solid #ca6e0d;margin-top:6px;padding-top:10px;color:#ca6e0d}
-    .notes{margin-top:24px;font-size:13px;color:#6b7280}.foot{margin-top:48px;border-top:1px solid #e5e7eb;padding-top:16px;font-size:12px;color:#9ca3af}
-    @media print{body{padding:24px}}
-  </style></head><body>
-    <div class="head">
-      <div><h1>DEVIS ${d.numero}</h1><div class="muted">${agence}</div>
-        ${settings ? `<div class="muted">${settings.adresse}</div><div class="muted">${settings.email} · ${settings.telephone}</div><div class="muted">SIRET : ${settings.siret}</div>` : ''}
-      </div>
-      <div style="text-align:right"><div class="muted">Date : ${formatDate(d.date)}</div><div class="muted">Validité : ${d.validite}</div><div class="muted">Statut : ${d.statut}</div></div>
-    </div>
-    <div style="display:flex;gap:48px">
-      <div class="box"><h3>Émis pour</h3><div style="font-size:14px;font-weight:600">${clientNom}</div></div>
-      ${d.titre ? `<div class="box"><h3>Objet</h3><div style="font-size:14px">${d.titre}</div></div>` : ''}
-    </div>
-    <table><thead><tr><th>Description</th><th style="text-align:right">Qté</th><th style="text-align:right">Prix unitaire</th><th style="text-align:right">Total</th></tr></thead><tbody>${rows}</tbody></table>
-    <div class="totals">
-      <div><span>Total HT</span><span>${formatEUR(ht)}</span></div>
-      <div><span>TVA (${tvaVal}%)</span><span>${formatEUR(ht * tvaVal / 100)}</span></div>
-      <div class="grand"><span>Total TTC</span><span>${formatEUR(ttc)}</span></div>
-    </div>
-    ${d.notes ? `<div class="notes"><strong>Notes :</strong><br>${d.notes}</div>` : ''}
-    <div class="foot">${agence} — Document généré le ${new Date().toLocaleDateString('fr-FR')}.</div>
-  </body></html>`;
-
-  const win = window.open('', '_blank', 'width=900,height=1000');
-  if (!win) {
-    window.alert('Veuillez autoriser les fenêtres pop-up pour exporter le PDF.');
-    return;
-  }
-  win.document.write(html);
-  win.document.close();
-  win.focus();
-  setTimeout(() => win.print(), 400);
 }

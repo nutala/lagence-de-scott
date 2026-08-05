@@ -1,12 +1,13 @@
 import React, { useState, FormEvent } from 'react';
-import { Plus, Trash2, Pencil } from 'lucide-react';
+import { Plus, Trash2, Pencil, Printer } from 'lucide-react';
 import { useAdminData } from '../AdminDataContext';
 import { Modal, EmptyState } from '../components';
 import { formatEUR, formatDate, clientName, FACTURE_STATUTS } from '../types';
 import type { Facture } from '../types';
+import { printInvoice } from '../pdf';
 
 export default function FacturesPage() {
-  const { clients, factures, saveFacture, updateFactureStatut, deleteFacture, notify, logActivite } = useAdminData();
+  const { clients, factures, settings, saveFacture, updateFactureStatut, deleteFacture, notify, logActivite } = useAdminData();
   const [modal, setModal] = useState<'new' | Facture | null>(null);
 
   const encaisse = factures.filter((f) => f.statut === 'Payée').reduce((s, f) => s + Number(f.montant), 0);
@@ -66,6 +67,24 @@ export default function FacturesPage() {
                     <td style={{ color: f.statut === 'En retard' ? 'var(--danger)' : 'var(--muted)', fontSize: 13, fontWeight: f.statut === 'En retard' ? 600 : 400 }}>{formatDate(f.echeance)}</td>
                     <td>
                       <div style={{ display: 'flex', gap: 4 }}>
+                        <button className="btn btn-sm btn-primary" onClick={() => {
+                          const tvaVal = Number(settings?.tva_default ?? 0);
+                          const ht = f.montant / (1 + tvaVal / 100);
+                          printInvoice({
+                            type: 'facture',
+                            numero: f.numero,
+                            titre: null,
+                            date: f.date,
+                            statut: f.statut,
+                            date2Label: 'Échéance',
+                            date2Text: f.echeance ? formatDate(f.echeance) : null,
+                            client: clients.find((c) => c.id === f.client_id) ?? null,
+                            rows: [{ description: 'Prestation', quantite: 1, prix_unitaire: ht }],
+                            tva: tvaVal,
+                            notes: null,
+                            settings,
+                          });
+                        }} aria-label="Exporter en PDF"><Printer /></button>
                         <button className="btn btn-sm btn-ghost" onClick={() => setModal(f)} aria-label="Modifier"><Pencil /></button>
                         <button
                           className="btn btn-sm btn-ghost"
