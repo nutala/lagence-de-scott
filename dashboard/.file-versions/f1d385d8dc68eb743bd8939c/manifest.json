@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 2,
+  "fileName": "admin-dashboard.html",
+  "currentVersionId": "d66e23ed-2fe3-49b4-8e6c-5a1c28be950c",
+  "entries": [
+    {
+      "id": "39859af9-dee5-46ba-bd69-cd8516e2267c",
+      "fileName": "admin-dashboard.html",
+      "version": 1,
+      "label": "Version 1",
+      "createdAt": 1785870993370,
+      "source": "ai",
+      "prompt": "Ok c'est pas mal, fais moi quelque chose de super propre, je compte sur toi",
+      "size": 47312,
+      "mime": "text/html; charset=utf-8",
+      "kind": "html",
+      "contentPath": "0001-39859af9-dee5-46ba-bd69-cd8516e2267c.html",
+      "promptSource": "message",
+      "contentDigest": "539e93ccfd651f780713f8ee6f8fdbf52002b6aa6661083cfedc093f5fe69ad2"
+    },
+    {
+      "id": "ca0dd8c2-18e7-46b4-b4f7-344ac308e674",
+      "fileName": "admin-dashboard.html",
+      "version": 2,
+      "label": "Version 2",
+      "createdAt": 1785871445232,
+      "source": "ai",
+      "prompt": "Place mon logo dans la zone adequate",
+      "size": 47232,
+      "mime": "text/html; charset=utf-8",
+      "kind": "html",
+      "contentPath": "0002-ca0dd8c2-18e7-46b4-b4f7-344ac308e674.html",
+      "promptSource": "message",
+      "contentDigest": "5a0027016ecbdf9753087dab39d9b1aa8460e91ab84d312cfa12bd73eb4a7542"
+    },
+    {
+      "id": "d66e23ed-2fe3-49b4-8e6c-5a1c28be950c",
+      "fileName": "admin-dashboard.html",
+      "version": 3,
+      "label": "Version 3",
+      "createdAt": 1785871795318,
+      "source": "ai",
+      "prompt": "@impeccable-design-polish\nCible actuelle : Fichier · admin-dashboard.html.\nSkill sélectionné : impeccable-design-polish. Utilisez-le comme workflow principal pour ce tour.\nIndex des ressources disponibles : skills(162), plugins(446), MCP(0 activés / 39 modèles), connecteurs(0 connectés), fichiers de design(5).\nSkills recherchables : 8-bit-orbit-video-template, ad-creative, after-hours-editorial-template, agent-browser, ai-music-album, algorithmic-art, apple-hig, article-magazine, artifacts-builder, brainstorming, brand-extract, brand-guidelines, brandkit, industrial-brutalist-ui, canvas-design, card-twitter, card-xiaohongshu, chat-motion-overlay, color-expert, competitive-ads-extractor, copywriting, creative-director, d3-visualization, data-report, deck-guizang-editorial, deck-open-slide-canvas, deck-swiss-international, design-brief, design-consultation, design-md, design-review, digits-fintech-swiss-template, doc, doc-kami-parchment, docx, domain-name-brainstormer, ecommerce-image-workflow, editorial-burgundy-principles-template, emil-design-eng, emilkowalski-motion, enhance-prompt, export-download-debugging, fal-3d, fal-generate, fal-image-edit, fal-kling-o3, fal-lip-sync, fal-realtime, fal-restore, fal-train, fal-tryon, fal-upscale, fal-video-edit, fal-vision, faq-page, field-notes-editorial-template, figma-code-connect-components, figma-create-design-system-rules, figma-create-new-file, figma-generate-design, +102 autres.\nPlugins recherchables : 3D Animated Boy Building Lego, 3D Stone Staircase Evolution Infographic, A Decade of Refinement Glow-Up, Agentic, Airbnb, Airtable, Ancient Guardian Dragon Rescue, Ancient Indian Kingdom FPV Video, Animation transfer and camera tracking prompt, Anime Martial Arts Battle Illustration, Ant, Apple, Application, Arc Browser, Art-Direct an Annual Report like a Magazine Creative Director, Artistic, Atelier Zero, Audio Jingle, Aurora Veil, BMW, BMW M, Beat-Synced Outfit Transformation Dance, Bento, Binance.US, Blog Post, Bold, Bold Poster Frame, Bold Signal Frame, Brief AI in Your Industry like a Tier-1 Consulting AI Vertical Lead, Brief a Health-System Board on Data Governance like a Chief Compliance Officer, Brutalism, Bugatti, Build Minimal Frame, Build a Buyer-Committee Leave-Behind like an Enterprise Sales Lead, Build a Designer Portfolio Narrative like a Hiring Bar-Raiser, Build a New-Hire Onboarding Module like a Top Enablement Lead, Build a Positioning & Messaging System like a Brand Strategist, Build a Studio Portfolio & Rate Deck like a Creative Studio Owner, Build an Editorial Design System like a Magazine Art Director, Cafe, +398 autres.\nMCP disponibles : Modèle Higgsfield (OpenClaw), Modèle Pollinations, Modèle Allyson (animated SVG), Modèle AWS Bedrock Image (Nova Canvas / SD 3.5), Modèle Prompt-to-Asset (icons / favicons / OG / logos), Modèle Nano Banana (AceDataCloud), Modèle Seedream (AceDataCloud), Modèle fal.ai (600+ models), Modèle Imagician (image post-processing), Modèle ImageSorcery (CV-based editing), Modèle Photopea (layered editor), Modèle Topaz Labs (AI upscale / denoise / sharpen), Modèle Transloadit (media pipelines), Modèle Screenshot Website (fast), Modèle ScreenshotOne (managed), Modèle Pagecast (browser → demo GIF / MP4), Modèle Figma Context (read designs → code), Modèle Design Token Bridge, Modèle Design System Extractor (Storybook), Modèle figma-use (write designs from chat), Modèle Aesthetics Wiki (moodboard / inspiration), Modèle 21st.dev Magic (UI components), Modèle shadcn/ui, Modèle FlyonUI (blocks & landing pages), Modèle AntV Chart, Modèle Mermaid diagrams, Modèle MCP Dashboards (45+ chart types), Modèle Excalidraw Architect (hand-drawn diagrams), Modèle EdgeOne Pages (publish HTML), Modèle PageDrop (instant HTML hosting), Modèle PDFSpark (HTML / URL → PDF), Modèle OGForge (Open Graph image generator), Modèle QRMint (styled QR codes), Modèle Slideshot (HTML → PDF / PNG / WebP / PPTX), Modèle Deckrun (Markdown → PDF / video / audio), Modèle Filesystem, Modèle GitHub, Modèle Fetch (HTTP), Modèle A11y (Web accessibility / WCAG).\nFichiers de design de référence : dashboard-preview.png, admin-dashboard.html, logo_transparent.png, plan.md, image.png.\nRègle de workflow : définissez d’abord l’objectif esthétique et les contraintes, puis cherchez et associez les ressources ; quand un choix utilisateur est nécessaire, générez un question-form structuré avec réponses personnalisées modifiables et continuez après confirmation.\nPolissez ce design jusqu’à ce qu’il soit prêt à être livré : vérifiez hiérarchie, typographie, espacements, responsive, états des boutons, états vide/chargement/erreur et accessibilité ; corrigez directement les points les plus importants.",
+      "size": 48422,
+      "mime": "text/html; charset=utf-8",
+      "kind": "html",
+      "contentPath": "0003-d66e23ed-2fe3-49b4-8e6c-5a1c28be950c.html",
+      "contentDigest": "612a7b34c92ac6aadfd44cbbcbc0a94a4b73aab49f981ead2c074ef396aa6e89",
+      "promptSource": "message"
+    }
+  ]
+}

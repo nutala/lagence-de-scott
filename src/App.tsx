@@ -11,6 +11,7 @@ import brandLogo from './assets/images/logo_cropped.png';
 import siteAtelierImg from './assets/images/site_atelier.jpg';
 import siteBoulangerieImg from './assets/images/site_boulangerie.jpg';
 import melissaImg from './assets/images/Melissa.jpg';
+import AdminApp from './admin/AdminApp';
 const MentionsLegales = lazy(() => import('./MentionsLegales'));
 import Preloader from './Preloader';
 
@@ -738,7 +739,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
   );
 }
 
-export default function App() {
+function PublicSite() {
   const [showMentions, setShowMentions] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -759,4 +760,10 @@ export default function App() {
       </Suspense>
     </>
   );
+}
+
+export default function App() {
+  const isAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+  if (isAdmin) return <AdminApp />;
+  return <PublicSite />;
 }
