@@ -430,7 +430,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
             {[
               { num: "01", title: "Rencontre & Découverte", desc: "On se rencontre (autour d'un café ou en visio) pour bien comprendre vos besoins, votre histoire, et définir les contours du projet." },
               { num: "02", title: "Conception", desc: "Je passe à la création technique ou graphique. Vous êtes impliqué à chaque étape décisive pour s'assurer qu'on va dans la bonne direction." },
-              { num: "03", title: "Lancement & Autonomie", desc: "Mise en ligne, tests finaux et formation pour être autonome. Je reste votre voisin disponible pour toute question ou évolution future." }
+              { num: "03", title: "Lancement & Suivi", desc: "Mise en ligne et tests finaux pour un lancement sans accroc. Je propose ensuite un accompagnement et une maintenance à long terme, avec des évolutions possibles à tout moment." }
             ].map((step, i) => (
               <motion.div key={step.num} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.2 }} className="bg-white/5 border border-white/10 p-10 rounded-[2rem] relative overflow-hidden group">
                 <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 text-[120px] font-display font-black text-white/[0.03] group-hover:text-sun-500/[0.1] transition-colors">{step.num}</div>
