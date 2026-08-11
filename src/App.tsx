@@ -14,6 +14,7 @@ import melissaImg from './assets/images/Melissa.jpg';
 import AdminApp from './admin/AdminApp';
 const MentionsLegales = lazy(() => import('./MentionsLegales'));
 import Preloader from './Preloader';
+import PacksSection from './Packs';
 
 const Marquee = ({ text, reverse = false, className = "" }: { text: string[], reverse?: boolean, className?: string }) => {
   return (
@@ -414,6 +415,8 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
           </div>
         </div>
       </section>
+
+      <PacksSection onCta={() => scrollTo('contact')} />
 
       {/* Processus */}
       <section id="processus" className="py-32 relative text-white bg-navy-900 border-t border-white/5 scroll-mt-28">
