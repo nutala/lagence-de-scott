@@ -504,6 +504,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
               accentColor="sun"
             />
             <ProjectItem 
+              href="https://gravio.onrender.com/" 
               title="Gravio — Suivi Sportif" 
               tags={['Web', 'PWA', 'Android']} 
               img={gravioImg} 
