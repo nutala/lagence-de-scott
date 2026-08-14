@@ -9,7 +9,7 @@ import {
 import avatarImg from './assets/images/regenerated_image_1779087486989.jpg';
 import brandLogo from './assets/images/logo_cropped.png';
 import siteAtelierImg from './assets/images/site_atelier.jpg';
-import siteBoulangerieImg from './assets/images/site_boulangerie.jpg';
+import gravioImg from './assets/images/gravio_screenshot.png';
 import melissaImg from './assets/images/Melissa.jpg';
 import AdminApp from './admin/AdminApp';
 const MentionsLegales = lazy(() => import('./MentionsLegales'));
@@ -504,9 +504,9 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
               accentColor="sun"
             />
             <ProjectItem 
-              title="Le Fournil d'Émilie" 
-              tags={['Prototype', 'Maquette']} 
-              img={siteBoulangerieImg} 
+              title="Gravio — Suivi Sportif" 
+              tags={['Web', 'PWA', 'Android']} 
+              img={gravioImg} 
               accentColor="leaf"
             />
           </div>
