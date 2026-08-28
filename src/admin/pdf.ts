@@ -102,6 +102,7 @@ export function buildInvoiceHtml(doc: InvoiceDoc): string {
     </div>
     ${ibanHtml}
     ${notes ? `<div class="notes"><strong>Notes :</strong><br>${escapeHtml(notes).replace(/\n/g, '<br>')}</div>` : ''}
+    ${type === 'facture' ? `<div style="margin-top:32px;text-align:center;font-size:11px;color:#6b7280;font-style:italic">TVA non applicable, art. 293 B du CGI</div>` : ''}
     <div class="foot">${escapeHtml(agence)} — Document généré le ${new Date().toLocaleDateString('fr-FR')}.</div>
   </body></html>`;
 }
