@@ -177,20 +177,25 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
 
   const saveDevis = useCallback(async (fields: Omit<Devis, 'id' | 'created_at' | 'numero'>, lignes: DevisLigne[], id?: string) => {
     if (!supabase) return;
-    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0).map((l) => ({ ...l, prix_unitaire: l.inclus ? 0 : Number(l.prix_unitaire) || 0 }));
+    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0).map((l) => ({ description: l.description.trim(), quantite: Number(l.quantite) || 1, prix_unitaire: l.inclus ? 0 : Number(l.prix_unitaire) || 0, inclus: !!l.inclus }));
+    const toRow = (l: typeof cleanLignes[number], devis_id: string) => ({ devis_id, description: l.description, quantite: l.quantite, prix_unitaire: l.prix_unitaire, inclus: l.inclus });
+    const insertLignes = async (rows: ReturnType<typeof toRow>[]) => {
+      if (!rows.length) return;
+      const { error } = await supabase.from('devis_lignes').insert(rows);
+      if (error && String(error.message).includes('inclus')) {
+        const fallback = rows.map(({ inclus: _i, ...r }) => r);
+        await supabase.from('devis_lignes').insert(fallback);
+      }
+    };
     if (id) {
       await supabase.from('devis').update(fields).eq('id', id);
       await supabase.from('devis_lignes').delete().eq('devis_id', id);
-      if (cleanLignes.length) {
-        await supabase.from('devis_lignes').insert(cleanLignes.map((l) => ({ ...l, devis_id: id })));
-      }
+      if (cleanLignes.length) await insertLignes(cleanLignes.map((l) => toRow(l, id)));
     } else {
       const year = new Date().getFullYear();
       const numero = nextNumero('D-', year, devis.map((d) => d.numero));
       const { data } = await supabase.from('devis').insert({ ...fields, numero }).select().single();
-      if (data && cleanLignes.length) {
-        await supabase.from('devis_lignes').insert(cleanLignes.map((l) => ({ ...l, devis_id: data.id })));
-      }
+      if (data && cleanLignes.length) await insertLignes(cleanLignes.map((l) => toRow(l, data.id)));
     }
     await refresh();
   }, [refresh, devis]);
@@ -209,24 +214,29 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
 
   const saveFacture = useCallback(async (fields: Omit<Facture, 'id' | 'created_at' | 'numero'>, lignes: FactureLigne[], id?: string) => {
     if (!supabase) return;
-    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0).map((l) => ({ ...l, prix_unitaire: l.inclus ? 0 : Number(l.prix_unitaire) || 0 }));
+    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0).map((l) => ({ description: l.description.trim(), quantite: Number(l.quantite) || 1, prix_unitaire: l.inclus ? 0 : Number(l.prix_unitaire) || 0, inclus: !!l.inclus }));
     const ht = cleanLignes.reduce((s, l) => s + Number(l.quantite) * Number(l.prix_unitaire), 0);
     const tvaVal = Number(fields.tva || 0);
     const montant = Math.round(ht * (1 + tvaVal / 100) * 100) / 100;
     const payload = { ...fields, montant };
+    const toRowF = (l: typeof cleanLignes[number], facture_id: string) => ({ facture_id, description: l.description, quantite: l.quantite, prix_unitaire: l.prix_unitaire, inclus: l.inclus });
+    const insertFLignes = async (rows: ReturnType<typeof toRowF>[]) => {
+      if (!rows.length) return;
+      const { error } = await supabase.from('factures_lignes').insert(rows);
+      if (error && String(error.message).includes('inclus')) {
+        const fallback = rows.map(({ inclus: _i, ...r }) => r);
+        await supabase.from('factures_lignes').insert(fallback);
+      }
+    };
     if (id) {
       await supabase.from('factures').update(payload).eq('id', id);
       await supabase.from('factures_lignes').delete().eq('facture_id', id);
-      if (cleanLignes.length) {
-        await supabase.from('factures_lignes').insert(cleanLignes.map((l) => ({ ...l, facture_id: id })));
-      }
+      if (cleanLignes.length) await insertFLignes(cleanLignes.map((l) => toRowF(l, id)));
     } else {
       const year = new Date().getFullYear();
       const numero = nextNumero('F-', year, factures.map((f) => f.numero));
       const { data } = await supabase.from('factures').insert({ ...payload, numero }).select().single();
-      if (data && cleanLignes.length) {
-        await supabase.from('factures_lignes').insert(cleanLignes.map((l) => ({ ...l, facture_id: data.id })));
-      }
+      if (data && cleanLignes.length) await insertFLignes(cleanLignes.map((l) => toRowF(l, data.id)));
     }
     await refresh();
   }, [refresh, factures]);
