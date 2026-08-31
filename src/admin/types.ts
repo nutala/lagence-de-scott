@@ -52,6 +52,7 @@ export interface DevisLigne {
   description: string;
   quantite: number;
   prix_unitaire: number;
+  inclus?: boolean;
 }
 
 export interface FactureLigne {
@@ -60,6 +61,7 @@ export interface FactureLigne {
   description: string;
   quantite: number;
   prix_unitaire: number;
+  inclus?: boolean;
 }
 
 export interface Facture {
@@ -196,13 +198,13 @@ export function projetTitle(projets: Projet[], id: string | null): string {
 export function devisTotal(lignes: DevisLigne[], devisId: string | null): number {
   return lignes
     .filter((l) => l.devis_id === devisId)
-    .reduce((s, l) => s + Number(l.quantite) * Number(l.prix_unitaire), 0);
+    .reduce((s, l) => s + (l.inclus ? 0 : Number(l.quantite) * Number(l.prix_unitaire)), 0);
 }
 
 export function facturesTotal(lignes: FactureLigne[], factureId: string | null): number {
   return lignes
     .filter((l) => l.facture_id === factureId)
-    .reduce((s, l) => s + Number(l.quantite) * Number(l.prix_unitaire), 0);
+    .reduce((s, l) => s + (l.inclus ? 0 : Number(l.quantite) * Number(l.prix_unitaire)), 0);
 }
 
 export function nextNumero(prefix: string, year: number, existing: string[]): string {

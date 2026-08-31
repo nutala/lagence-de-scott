@@ -128,8 +128,8 @@ export default function DevisPage({ initialDetailId = null, setPage }: { initial
                     <tr key={l.id}>
                       <td>{l.description}</td>
                       <td style={{ textAlign: 'right' }}>{l.quantite}</td>
-                      <td style={{ textAlign: 'right' }}>{formatEUR(l.prix_unitaire)}</td>
-                      <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatEUR(Number(l.quantite) * Number(l.prix_unitaire))}</td>
+                      <td style={{ textAlign: 'right' }}>{l.inclus ? <span style={{ color: 'var(--muted)', fontStyle: 'italic' }}>Inclus</span> : formatEUR(l.prix_unitaire)}</td>
+                      <td style={{ textAlign: 'right', fontWeight: 600 }}>{l.inclus ? <span style={{ color: 'var(--muted)', fontStyle: 'italic' }}>Inclus</span> : formatEUR(Number(l.quantite) * Number(l.prix_unitaire))}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -235,7 +235,7 @@ function DevisForm({
   const [notes, setNotes] = useState(devis?.notes ?? '');
   const [lignes, setLignes] = useState<DevisLigne[]>(initialLines.length ? initialLines : [{ description: '', quantite: 1, prix_unitaire: 0 }]);
 
-  const ht = lignes.reduce((s, l) => s + (Number(l.quantite) || 0) * (Number(l.prix_unitaire) || 0), 0);
+  const ht = lignes.reduce((s, l) => s + (l.inclus ? 0 : (Number(l.quantite) || 0) * (Number(l.prix_unitaire) || 0)), 0);
   const tvaVal = Number(tva) || 0;
   const ttc = ht * (1 + tvaVal / 100);
 
@@ -285,10 +285,11 @@ function DevisForm({
             </button>
           </div>
           {lignes.map((l, i) => (
-            <div key={i} className="form-row line-row">
+            <div key={i} className="form-row line-row" style={{ alignItems: 'center' }}>
               <input placeholder="Description de la prestation" value={l.description} onChange={(e) => updateLigne(i, { description: e.target.value })} />
               <input type="number" min="0" step="any" placeholder="Qté" value={String(l.quantite)} onChange={(e) => updateLigne(i, { quantite: Number(e.target.value) })} />
-              <input type="number" min="0" step="0.01" placeholder="Prix unitaire" value={String(l.prix_unitaire)} onChange={(e) => updateLigne(i, { prix_unitaire: Number(e.target.value) })} />
+              <input type="number" min="0" step="0.01" placeholder="Prix unitaire" value={String(l.prix_unitaire)} onChange={(e) => updateLigne(i, { prix_unitaire: Number(e.target.value) })} disabled={!!l.inclus} style={l.inclus ? { opacity: 0.5 } : undefined} />
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, whiteSpace: 'nowrap', cursor: 'pointer' }}><input type="checkbox" checked={!!l.inclus} onChange={(e) => updateLigne(i, { inclus: e.target.checked })} /> Inclus</label>
               <button type="button" className="btn btn-ghost btn-icon" style={{ color: 'var(--danger)' }} onClick={() => setLignes((prev) => prev.filter((_, idx) => idx !== i))} aria-label="Supprimer la ligne"><X /></button>
             </div>
           ))}

@@ -28,20 +28,26 @@ export interface InvoiceDoc {
 
 export function buildInvoiceHtml(doc: InvoiceDoc): string {
   const { type, numero, titre, date, statut, date2Label, date2Text, client, rows, tva, notes, settings } = doc;
-  const ht = rows.reduce((s, l) => s + Number(l.quantite) * Number(l.prix_unitaire), 0);
+  const ht = rows.reduce((s, l) => s + ((l as unknown as { inclus?: boolean }).inclus ? 0 : Number(l.quantite) * Number(l.prix_unitaire)), 0);
   const tvaVal = Number(tva || 0);
   const ttc = ht * (1 + tvaVal / 100);
   const agence = settings?.agence_nom || "L'Agence de Scott";
   const absLogo = typeof window !== 'undefined' ? window.location.origin + logoUrl : logoUrl;
 
+  const isInclus = (l: DevisLigne) => (l as unknown as { inclus?: boolean }).inclus === true;
   const rowsHtml = rows
     .map(
-      (l) => `<tr>
+      (l) => {
+        const inclus = isInclus(l);
+        const pu = inclus ? `<span style="color:#6b7280;font-style:italic">Inclus</span>` : escapeHtml(formatEUR(l.prix_unitaire));
+        const tot = inclus ? `<span style="color:#6b7280;font-style:italic">Inclus</span>` : `<strong>${escapeHtml(formatEUR(Number(l.quantite) * Number(l.prix_unitaire)))}</strong>`;
+        return `<tr>
         <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">${escapeHtml(l.description)}</td>
         <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right">${Number(l.quantite)}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right">${formatEUR(l.prix_unitaire)}</td>
-        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right"><strong>${formatEUR(Number(l.quantite) * Number(l.prix_unitaire))}</strong></td>
-      </tr>`,
+        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right">${pu}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right">${tot}</td>
+      </tr>`;
+      },
     )
     .join('');
 

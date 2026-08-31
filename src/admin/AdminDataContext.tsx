@@ -177,7 +177,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
 
   const saveDevis = useCallback(async (fields: Omit<Devis, 'id' | 'created_at' | 'numero'>, lignes: DevisLigne[], id?: string) => {
     if (!supabase) return;
-    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0);
+    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0).map((l) => ({ ...l, prix_unitaire: l.inclus ? 0 : Number(l.prix_unitaire) || 0 }));
     if (id) {
       await supabase.from('devis').update(fields).eq('id', id);
       await supabase.from('devis_lignes').delete().eq('devis_id', id);
@@ -209,7 +209,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
 
   const saveFacture = useCallback(async (fields: Omit<Facture, 'id' | 'created_at' | 'numero'>, lignes: FactureLigne[], id?: string) => {
     if (!supabase) return;
-    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0);
+    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0).map((l) => ({ ...l, prix_unitaire: l.inclus ? 0 : Number(l.prix_unitaire) || 0 }));
     const ht = cleanLignes.reduce((s, l) => s + Number(l.quantite) * Number(l.prix_unitaire), 0);
     const tvaVal = Number(fields.tva || 0);
     const montant = Math.round(ht * (1 + tvaVal / 100) * 100) / 100;

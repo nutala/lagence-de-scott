@@ -59,7 +59,8 @@ create table if not exists public.devis_lignes (
   devis_id uuid references public.devis(id) on delete cascade not null,
   description text not null,
   quantite numeric not null default 1,
-  prix_unitaire numeric not null default 0
+  prix_unitaire numeric not null default 0,
+  inclus boolean not null default false
 );
 
 create table if not exists public.factures (
@@ -82,7 +83,8 @@ create table if not exists public.factures_lignes (
   facture_id uuid references public.factures(id) on delete cascade not null,
   description text not null,
   quantite numeric not null default 1,
-  prix_unitaire numeric not null default 0
+  prix_unitaire numeric not null default 0,
+  inclus boolean not null default false
 );
 
 create table if not exists public.planning_events (
