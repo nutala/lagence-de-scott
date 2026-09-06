@@ -205,12 +205,22 @@ function FactureForm({
             </button>
           </div>
           {lignes.map((l, i) => (
-            <div key={i} className="form-row line-row" style={{ alignItems: 'center' }}>
-              <input placeholder="Description de la prestation" value={l.description} onChange={(e) => updateLigne(i, { description: e.target.value })} />
-              <input type="number" min="0" step="any" placeholder="Qté" value={String(l.quantite)} onChange={(e) => updateLigne(i, { quantite: Number(e.target.value) })} />
-              <input type="number" min="0" step="0.01" placeholder="Prix unitaire" value={String(l.prix_unitaire)} onChange={(e) => updateLigne(i, { prix_unitaire: Number(e.target.value) })} disabled={!!l.inclus} style={l.inclus ? { opacity: 0.5 } : undefined} />
-              <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, whiteSpace: 'nowrap', cursor: 'pointer' }}><input type="checkbox" checked={!!l.inclus} onChange={(e) => updateLigne(i, { inclus: e.target.checked })} /> Inclus</label>
-              <button type="button" className="btn btn-ghost btn-icon" style={{ color: 'var(--danger)' }} onClick={() => setLignes((prev) => prev.filter((_, idx) => idx !== i))} aria-label="Supprimer la ligne"><X /></button>
+            <div key={i} style={{ borderBottom: '1px solid var(--border)', paddingBottom: 10, marginBottom: 10 }}>
+              <div className="form-row line-row" style={{ alignItems: 'center', marginBottom: 8 }}>
+                <input placeholder="Description de la prestation" value={l.description} onChange={(e) => updateLigne(i, { description: e.target.value })} />
+                <input type="number" min="0" step="any" placeholder="Qté" value={String(l.quantite)} onChange={(e) => updateLigne(i, { quantite: Number(e.target.value) })} />
+                <input type="number" min="0" step="0.01" placeholder="Prix unitaire" value={String(l.prix_unitaire)} onChange={(e) => updateLigne(i, { prix_unitaire: Number(e.target.value) })} disabled={!!l.inclus} style={l.inclus ? { opacity: 0.5 } : undefined} />
+                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, whiteSpace: 'nowrap', cursor: 'pointer' }}><input type="checkbox" checked={!!l.inclus} onChange={(e) => updateLigne(i, { inclus: e.target.checked })} /> Inclus</label>
+                <button type="button" className="btn btn-ghost btn-icon" style={{ color: 'var(--danger)' }} onClick={() => setLignes((prev) => prev.filter((_, idx) => idx !== i))} aria-label="Supprimer la ligne"><X /></button>
+              </div>
+              <textarea
+                rows={3}
+                value={l.details ?? ''}
+                onChange={(e) => updateLigne(i, { details: e.target.value })}
+                placeholder="Éléments compris dans cette prestation (1 par ligne)&#10;Ex : Le Pack Signature comprend :&#10;Conception graphique sur mesure&#10;Mise en ligne"
+                style={{ width: '100%', fontSize: 13 }}
+                aria-label="Éléments compris dans la prestation"
+              />
             </div>
           ))}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 12, borderTop: '1px solid var(--border)', marginTop: 12, fontSize: 14 }}>

@@ -1,6 +1,6 @@
 import logoUrl from '../assets/images/logo_cropped.png';
 import type { Client, DevisLigne, Settings } from './types';
-import { formatEUR, formatDate } from './types';
+import { formatEUR, formatDate, splitDetails } from './types';
 
 function escapeHtml(s: string | null | undefined): string {
   return (s ?? '')
@@ -39,10 +39,14 @@ export function buildInvoiceHtml(doc: InvoiceDoc): string {
     .map(
       (l) => {
         const inclus = isInclus(l);
+        const details = splitDetails((l as unknown as { details?: string | null }).details);
         const pu = inclus ? `<span style="color:#6b7280;font-style:italic">Inclus</span>` : escapeHtml(formatEUR(l.prix_unitaire));
         const tot = inclus ? `<span style="color:#6b7280;font-style:italic">Inclus</span>` : `<strong>${escapeHtml(formatEUR(Number(l.quantite) * Number(l.prix_unitaire)))}</strong>`;
+        const detailsHtml = details.length
+          ? `<ul style="margin:6px 0 0;padding-left:18px;color:#4b5563;font-size:12.5px;line-height:1.55">${details.map((d) => `<li>${escapeHtml(d)}</li>`).join('')}</ul>`
+          : '';
         return `<tr>
-        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">${escapeHtml(l.description)}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb"><div style="font-weight:600">${escapeHtml(l.description)}</div>${detailsHtml}</td>
         <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right">${Number(l.quantite)}</td>
         <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right">${pu}</td>
         <td style="padding:10px 12px;border-bottom:1px solid #e5e7eb;text-align:right">${tot}</td>

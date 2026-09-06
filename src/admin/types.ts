@@ -53,6 +53,7 @@ export interface DevisLigne {
   quantite: number;
   prix_unitaire: number;
   inclus?: boolean;
+  details?: string | null;
 }
 
 export interface FactureLigne {
@@ -62,6 +63,14 @@ export interface FactureLigne {
   quantite: number;
   prix_unitaire: number;
   inclus?: boolean;
+  details?: string | null;
+}
+
+export function splitDetails(details: string | null | undefined): string[] {
+  return (details ?? '')
+    .split('\n')
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 export interface Facture {

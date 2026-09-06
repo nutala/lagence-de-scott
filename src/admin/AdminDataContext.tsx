@@ -177,15 +177,18 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
 
   const saveDevis = useCallback(async (fields: Omit<Devis, 'id' | 'created_at' | 'numero'>, lignes: DevisLigne[], id?: string) => {
     if (!supabase) return;
-    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0).map((l) => ({ description: l.description.trim(), quantite: Number(l.quantite) || 1, prix_unitaire: l.inclus ? 0 : Number(l.prix_unitaire) || 0, inclus: !!l.inclus }));
-    const toRow = (l: typeof cleanLignes[number], devis_id: string) => ({ devis_id, description: l.description, quantite: l.quantite, prix_unitaire: l.prix_unitaire, inclus: l.inclus });
+    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0).map((l) => ({ description: l.description.trim(), quantite: Number(l.quantite) || 1, prix_unitaire: l.inclus ? 0 : Number(l.prix_unitaire) || 0, inclus: !!l.inclus, details: (l.details ?? '').trim() || null }));
+    const toRow = (l: typeof cleanLignes[number], devis_id: string) => ({ devis_id, description: l.description, quantite: l.quantite, prix_unitaire: l.prix_unitaire, inclus: l.inclus, details: l.details });
     const insertLignes = async (rows: ReturnType<typeof toRow>[]) => {
       if (!rows.length) return;
       const { error } = await supabase.from('devis_lignes').insert(rows);
-      if (error && String(error.message).includes('inclus')) {
-        const fallback = rows.map(({ inclus: _i, ...r }) => r);
-        await supabase.from('devis_lignes').insert(fallback);
+      if (error && /inclus|details/.test(String(error.message))) {
+        const fallback = rows.map(({ inclus: _i, details: _d, ...r }) => r);
+        const { error: e2 } = await supabase.from('devis_lignes').insert(fallback);
+        if (e2) throw e2;
+        return;
       }
+      if (error) throw error;
     };
     if (id) {
       await supabase.from('devis').update(fields).eq('id', id);
@@ -214,19 +217,22 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
 
   const saveFacture = useCallback(async (fields: Omit<Facture, 'id' | 'created_at' | 'numero'>, lignes: FactureLigne[], id?: string) => {
     if (!supabase) return;
-    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0).map((l) => ({ description: l.description.trim(), quantite: Number(l.quantite) || 1, prix_unitaire: l.inclus ? 0 : Number(l.prix_unitaire) || 0, inclus: !!l.inclus }));
+    const cleanLignes = lignes.filter((l) => l.description.trim() && Number(l.quantite) > 0).map((l) => ({ description: l.description.trim(), quantite: Number(l.quantite) || 1, prix_unitaire: l.inclus ? 0 : Number(l.prix_unitaire) || 0, inclus: !!l.inclus, details: (l.details ?? '').trim() || null }));
     const ht = cleanLignes.reduce((s, l) => s + Number(l.quantite) * Number(l.prix_unitaire), 0);
     const tvaVal = Number(fields.tva || 0);
     const montant = Math.round(ht * (1 + tvaVal / 100) * 100) / 100;
     const payload = { ...fields, montant };
-    const toRowF = (l: typeof cleanLignes[number], facture_id: string) => ({ facture_id, description: l.description, quantite: l.quantite, prix_unitaire: l.prix_unitaire, inclus: l.inclus });
+    const toRowF = (l: typeof cleanLignes[number], facture_id: string) => ({ facture_id, description: l.description, quantite: l.quantite, prix_unitaire: l.prix_unitaire, inclus: l.inclus, details: l.details });
     const insertFLignes = async (rows: ReturnType<typeof toRowF>[]) => {
       if (!rows.length) return;
       const { error } = await supabase.from('factures_lignes').insert(rows);
-      if (error && String(error.message).includes('inclus')) {
-        const fallback = rows.map(({ inclus: _i, ...r }) => r);
-        await supabase.from('factures_lignes').insert(fallback);
+      if (error && /inclus|details/.test(String(error.message))) {
+        const fallback = rows.map(({ inclus: _i, details: _d, ...r }) => r);
+        const { error: e2 } = await supabase.from('factures_lignes').insert(fallback);
+        if (e2) throw e2;
+        return;
       }
+      if (error) throw error;
     };
     if (id) {
       await supabase.from('factures').update(payload).eq('id', id);
