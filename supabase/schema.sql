@@ -61,7 +61,8 @@ create table if not exists public.devis_lignes (
   quantite numeric not null default 1,
   prix_unitaire numeric not null default 0,
   inclus boolean not null default false,
-  details text
+  details text,
+  position integer not null default 0
 );
 
 create table if not exists public.factures (
@@ -86,7 +87,8 @@ create table if not exists public.factures_lignes (
   quantite numeric not null default 1,
   prix_unitaire numeric not null default 0,
   inclus boolean not null default false,
-  details text
+  details text,
+  position integer not null default 0
 );
 
 create table if not exists public.planning_events (

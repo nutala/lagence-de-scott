@@ -1,5 +1,5 @@
 import React, { useState, FormEvent } from 'react';
-import { Plus, Trash2, Pencil, Printer, X } from 'lucide-react';
+import { Plus, Trash2, Pencil, Printer, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { useAdminData } from '../AdminDataContext';
 import { Modal, EmptyState } from '../components';
 import { formatEUR, formatDate, clientName, facturesTotal, FACTURE_STATUTS } from '../types';
@@ -163,6 +163,16 @@ function FactureForm({
     setLignes((prev) => prev.map((l, idx) => (idx === i ? { ...l, ...patch } : l)));
   };
 
+  const moveLigne = (i: number, dir: -1 | 1) => {
+    setLignes((prev) => {
+      const j = i + dir;
+      if (j < 0 || j >= prev.length) return prev;
+      const next = [...prev];
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
+  };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!clientId) {
@@ -177,7 +187,7 @@ function FactureForm({
   };
 
   return (
-    <Modal title={facture ? `Modifier la facture ${facture.numero}` : 'Nouvelle facture'} onClose={onClose} wide>
+    <Modal title={facture ? `Modifier la facture ${facture.numero}` : 'Nouvelle facture'} onClose={onClose} wide closeOnOverlayClick={false}>
       <form onSubmit={handleSubmit}>
         <div className="form-row">
           <div className="form-group">
@@ -210,8 +220,12 @@ function FactureForm({
                 <input placeholder="Description de la prestation" value={l.description} onChange={(e) => updateLigne(i, { description: e.target.value })} />
                 <input type="number" min="0" step="any" placeholder="Qté" value={String(l.quantite)} onChange={(e) => updateLigne(i, { quantite: Number(e.target.value) })} />
                 <input type="number" min="0" step="0.01" placeholder="Prix unitaire" value={String(l.prix_unitaire)} onChange={(e) => updateLigne(i, { prix_unitaire: Number(e.target.value) })} disabled={!!l.inclus} style={l.inclus ? { opacity: 0.5 } : undefined} />
-                <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, whiteSpace: 'nowrap', cursor: 'pointer' }}><input type="checkbox" checked={!!l.inclus} onChange={(e) => updateLigne(i, { inclus: e.target.checked })} /> Inclus</label>
-                <button type="button" className="btn btn-ghost btn-icon" style={{ color: 'var(--danger)' }} onClick={() => setLignes((prev) => prev.filter((_, idx) => idx !== i))} aria-label="Supprimer la ligne"><X /></button>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, whiteSpace: 'nowrap', cursor: 'pointer' }}><input type="checkbox" checked={!!l.inclus} onChange={(e) => updateLigne(i, { inclus: e.target.checked })} /> Inclus</label>
+              <span style={{ display: 'flex', gap: 2 }}>
+                <button type="button" className="btn btn-ghost btn-icon" onClick={() => moveLigne(i, -1)} disabled={i === 0} aria-label="Monter la ligne" title="Monter"><ChevronUp /></button>
+                <button type="button" className="btn btn-ghost btn-icon" onClick={() => moveLigne(i, 1)} disabled={i === lignes.length - 1} aria-label="Descendre la ligne" title="Descendre"><ChevronDown /></button>
+              </span>
+              <button type="button" className="btn btn-ghost btn-icon" style={{ color: 'var(--danger)' }} onClick={() => setLignes((prev) => prev.filter((_, idx) => idx !== i))} aria-label="Supprimer la ligne"><X /></button>
               </div>
               <textarea
                 rows={3}
