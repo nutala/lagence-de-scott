@@ -43,6 +43,8 @@ export interface Devis {
   statut: string;
   tva: number;
   notes: string | null;
+  bon_pour_accord?: boolean;
+  accord_date?: string | null;
   created_at: string;
 }
 
@@ -73,6 +75,24 @@ export function splitDetails(details: string | null | undefined): string[] {
     .split('\n')
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+function escapeRich(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Mini-markdown : **mot** -> <strong>mot</strong>. Le texte est échappé
+// d'abord, donc aucun HTML brut ne peut être injecté.
+export function formatRichText(text: string | null | undefined): string {
+  return escapeRich(text ?? '')
+    .split('\n')
+    .map((line) => line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'))
+    .join('<br>');
 }
 
 export interface Facture {

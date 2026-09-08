@@ -1,6 +1,6 @@
 import logoUrl from '../assets/images/logo_cropped.png';
 import type { Client, DevisLigne, Settings } from './types';
-import { formatEUR, formatDate, splitDetails } from './types';
+import { formatEUR, formatDate, splitDetails, formatRichText } from './types';
 
 function escapeHtml(s: string | null | undefined): string {
   return (s ?? '')
@@ -24,10 +24,32 @@ export interface InvoiceDoc {
   tva: number;
   notes: string | null;
   settings: Settings | null;
+  bonPourAccord?: boolean;
+  accordDate?: string | null;
+  signataireAgence?: string | null;
+}
+
+function signatureHtml(bonPourAccord: boolean, accordDate: string | null, signataireAgence: string | null): string {
+  const accordLine = bonPourAccord
+    ? `<div style="font-size:13px;margin-top:8px">☑ Bon pour accord reçu${accordDate ? ` le ${formatDate(accordDate)}` : ''}</div>`
+    : `<div style="font-size:12px;color:#6b7280;margin-top:8px">Mention manuscrite « Bon pour accord » + signature :</div>
+       <div style="height:64px"></div>`;
+  return `<div style="display:flex;gap:24px;margin-top:32px">
+    <div style="flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px">
+      <div style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Pour ${escapeHtml(signataireAgence || "l'agence")}</div>
+      <div style="font-size:13px;margin-top:8px">Date : ${new Date().toLocaleDateString('fr-FR')}</div>
+      <div style="font-size:12px;color:#6b7280;margin-top:8px">Signature :</div>
+      <div style="height:64px"></div>
+    </div>
+    <div style="flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px">
+      <div style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Bon pour accord — client</div>
+      ${accordLine}
+    </div>
+  </div>`;
 }
 
 export function buildInvoiceHtml(doc: InvoiceDoc): string {
-  const { type, numero, titre, date, statut, date2Label, date2Text, client, rows, tva, notes, settings } = doc;
+  const { type, numero, titre, date, statut, date2Label, date2Text, client, rows, tva, notes, settings, bonPourAccord, accordDate, signataireAgence } = doc;
   const ht = rows.reduce((s, l) => s + ((l as unknown as { inclus?: boolean }).inclus ? 0 : Number(l.quantite) * Number(l.prix_unitaire)), 0);
   const tvaVal = Number(tva || 0);
   const ttc = ht * (1 + tvaVal / 100);
@@ -111,7 +133,8 @@ export function buildInvoiceHtml(doc: InvoiceDoc): string {
       <div class="grand"><span>Total TTC</span><span>${formatEUR(ttc)}</span></div>
     </div>
     ${ibanHtml}
-    ${notes ? `<div class="notes"><strong>Notes :</strong><br>${escapeHtml(notes).replace(/\n/g, '<br>')}</div>` : ''}
+    ${notes ? `<div class="notes"><strong>Notes :</strong><br>${formatRichText(notes)}</div>` : ''}
+    ${type === 'devis' ? signatureHtml(bonPourAccord ?? false, accordDate ?? null, signataireAgence ?? null) : ''}
     <div style="margin-top:32px;text-align:center;font-size:11px;color:#6b7280;font-style:italic">TVA non applicable, art. 293 B du CGI</div>
     <div class="foot">${escapeHtml(agence)} — Document généré le ${new Date().toLocaleDateString('fr-FR')}.</div>
   </body></html>`;

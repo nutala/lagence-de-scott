@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useRef } from 'react';
 import { Plus, Trash2, Pencil, Printer, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { useAdminData } from '../AdminDataContext';
 import { Modal, EmptyState } from '../components';
@@ -186,6 +186,22 @@ function FactureForm({
     );
   };
 
+  const notesRef = useRef<HTMLTextAreaElement>(null);
+  const wrapBold = () => {
+    const el = notesRef.current;
+    if (!el) {
+      setNotes((n) => `${n}****`);
+      return;
+    }
+    const { selectionStart: s, selectionEnd: e, value } = el;
+    const sel = value.slice(s, e) || 'texte';
+    setNotes(`${value.slice(0, s)}**${sel}**${value.slice(e)}`);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(s + 2, s + 2 + sel.length);
+    });
+  };
+
   return (
     <Modal title={facture ? `Modifier la facture ${facture.numero}` : 'Nouvelle facture'} onClose={onClose} wide closeOnOverlayClick={false}>
       <form onSubmit={handleSubmit}>
@@ -257,8 +273,11 @@ function FactureForm({
           </div>
         </div>
         <div className="form-group">
-          <label>Notes / Conditions</label>
-          <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Conditions de paiement, délais…" />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <label style={{ marginBottom: 0 }}>Notes / Conditions</label>
+            <button type="button" className="btn btn-sm btn-ghost" onClick={wrapBold} title="Gras : entoure la sélection de **"><strong>G</strong></button>
+          </div>
+          <textarea ref={notesRef} rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Conditions de paiement, délais… **payable à réception**" />
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 20 }}>
           <button type="button" className="btn btn-secondary" onClick={onClose}>Annuler</button>

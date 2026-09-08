@@ -51,6 +51,8 @@ create table if not exists public.devis (
   statut text not null default 'Brouillon',
   tva numeric not null default 20,
   notes text,
+  bon_pour_accord boolean not null default false,
+  accord_date date,
   created_at timestamptz not null default now()
 );
 

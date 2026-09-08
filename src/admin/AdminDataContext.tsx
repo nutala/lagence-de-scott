@@ -35,6 +35,7 @@ interface AdminData {
 
   saveDevis: (fields: Omit<Devis, 'id' | 'created_at' | 'numero'>, lignes: DevisLigne[], id?: string) => Promise<void>;
   updateDevisStatut: (id: string, statut: string) => Promise<void>;
+  updateDevisAccord: (id: string, bon_pour_accord: boolean, accord_date: string | null) => Promise<void>;
   deleteDevis: (id: string) => Promise<void>;
 
   saveFacture: (fields: Omit<Facture, 'id' | 'created_at' | 'numero' | 'montant'>, lignes: FactureLigne[], id?: string) => Promise<void>;
@@ -214,15 +215,39 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
       }
       throw error;
     };
-    if (id) {
-      await supabase.from('devis').update(fields).eq('id', id);
-      await supabase.from('devis_lignes').delete().eq('devis_id', id);
-      if (cleanLignes.length) await insertLignes(cleanLignes.map((l) => toRow(l, id)));
-    } else {
+    // Écriture du devis avec repli si les colonnes d'accord n'existent pas encore.
+    const writeDevis = async () => {
+      if (id) {
+        const r1 = await supabase.from('devis').update(fields).eq('id', id);
+        if (r1.error && /bon_pour_accord|accord_date/.test(r1.error.message)) {
+          const fb = { ...fields };
+          delete fb.bon_pour_accord;
+          delete fb.accord_date;
+          const r2 = await supabase.from('devis').update(fb).eq('id', id);
+          if (r2.error) throw r2.error;
+        } else if (r1.error) throw r1.error;
+        return id;
+      }
       const year = new Date().getFullYear();
       const numero = nextNumero('D-', year, devis.map((d) => d.numero));
-      const { data } = await supabase.from('devis').insert({ ...fields, numero }).select().single();
-      if (data && cleanLignes.length) await insertLignes(cleanLignes.map((l) => toRow(l, data.id)));
+      const r1 = await supabase.from('devis').insert({ ...fields, numero }).select().single();
+      if (r1.error && /bon_pour_accord|accord_date/.test(String(r1.error.message))) {
+        const fb = { ...fields };
+        delete fb.bon_pour_accord;
+        delete fb.accord_date;
+        const r2 = await supabase.from('devis').insert({ ...fb, numero }).select().single();
+        if (r2.error) throw r2.error;
+        return (r2.data as { id: string } | null)?.id ?? null;
+      }
+      if (r1.error) throw r1.error;
+      return (r1.data as { id: string } | null)?.id ?? null;
+    };
+    const devisId = await writeDevis();
+    if (id) {
+      await supabase.from('devis_lignes').delete().eq('devis_id', id);
+      if (cleanLignes.length) await insertLignes(cleanLignes.map((l) => toRow(l, id)));
+    } else if (devisId && cleanLignes.length) {
+      await insertLignes(cleanLignes.map((l) => toRow(l, devisId)));
     }
     await refresh();
   }, [refresh, devis]);
@@ -232,6 +257,19 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     await supabase.from('devis').update({ statut }).eq('id', id);
     await refresh();
   }, [refresh]);
+
+  const updateDevisAccord = useCallback(async (id: string, bon_pour_accord: boolean, accord_date: string | null) => {
+    if (!supabase) return;
+    const { error } = await supabase.from('devis').update({ bon_pour_accord, accord_date }).eq('id', id);
+    if (error) {
+      if (/bon_pour_accord|accord_date/.test(error.message)) {
+        notify('Colonnes accord manquantes : joue la migration SQL dans Supabase');
+        return;
+      }
+      throw error;
+    }
+    await refresh();
+  }, [refresh, notify]);
 
   const deleteDevis = useCallback(async (id: string) => {
     if (!supabase) return;
@@ -310,7 +348,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     loading, error, clients, projets, taches, devis, devisLignes, factures, facturesLignes,
     events, settings, activites, refresh, logActivite, notify, toast,
     saveClient, deleteClient, saveProjet, deleteProjet, saveTache,
-    updateTacheStatut, deleteTache, saveDevis, updateDevisStatut, deleteDevis,
+    updateTacheStatut, deleteTache, saveDevis, updateDevisStatut, updateDevisAccord, deleteDevis,
     saveFacture, updateFactureStatut, deleteFacture, saveEvent, deleteEvent, saveSettings,
   };
 
