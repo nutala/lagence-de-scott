@@ -27,8 +27,10 @@ export interface InvoiceDoc {
   signataireAgence?: string | null;
 }
 
-function signatureHtml(signataireAgence: string | null): string {
-  return `<div style="display:flex;gap:24px;margin-top:32px">
+function signatureHtml(signataireAgence: string | null, rappel: string): string {
+  return `<div style="margin-top:32px;break-inside:avoid">
+    <div style="font-size:12px;color:#4b5563;border-top:1px solid #e5e7eb;padding-top:10px;margin-bottom:16px">Signatures — ${rappel}</div>
+    <div style="display:flex;gap:24px">
     <div style="flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px">
       <div style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Pour l'agence</div>
       <div style="font-size:13px;margin-top:8px">${escapeHtml(signataireAgence || "L'Agence de Scott")}</div>
@@ -41,6 +43,7 @@ function signatureHtml(signataireAgence: string | null): string {
       <div style="font-size:13px;margin-top:8px">Date :</div>
       <div style="font-size:12px;margin-top:8px">Mention manuscrite « Bon pour accord » + signature :</div>
       <div style="height:48px"></div>
+    </div>
     </div>
   </div>`;
 }
@@ -130,8 +133,8 @@ export function buildInvoiceHtml(doc: InvoiceDoc): string {
       <div class="grand"><span>Total TTC</span><span>${formatEUR(ttc)}</span></div>
     </div>
     ${ibanHtml}
-    ${notes ? `<div class="notes"><strong>Notes :</strong><br>${formatRichText(notes)}</div>` : ''}
-    ${type === 'devis' ? signatureHtml(signataireAgence ?? null) : ''}
+    ${notes ? `<div class="notes">${formatRichText(notes)}</div>` : ''}
+    ${type === 'devis' ? signatureHtml(signataireAgence ?? null, `Devis ${escapeHtml(numero)} du ${formatDate(date)} — ${escapeHtml(client ? `${client.nom}${client.entreprise ? ` · ${client.entreprise}` : ''}` : 'Client supprimé')} — Total TTC ${escapeHtml(formatEUR(ttc))}`) : ''}
     <div style="margin-top:32px;text-align:center;font-size:11px;color:#6b7280;font-style:italic">TVA non applicable, art. 293 B du CGI</div>
     <div class="foot">${escapeHtml(agence)} — Document généré le ${new Date().toLocaleDateString('fr-FR')}.</div>
   </body></html>`;
