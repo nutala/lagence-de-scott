@@ -32,9 +32,9 @@ function signatureHtml(signataireAgence: string | null): string {
     <div style="flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px">
       <div style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Pour l'agence</div>
       <div style="font-size:13px;margin-top:8px">${escapeHtml(signataireAgence || "L'Agence de Scott")}</div>
+      <div style="font-size:13px;margin-top:8px">Date :</div>
       <div style="font-size:12px;color:#6b7280;margin-top:8px">Signature :</div>
       <div style="height:48px"></div>
-      <div style="font-size:13px;margin-top:8px">Date :</div>
     </div>
     <div style="flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px">
       <div style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Pour le client</div>
