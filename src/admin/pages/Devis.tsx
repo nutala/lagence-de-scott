@@ -8,7 +8,7 @@ import { printInvoice } from '../pdf';
 
 export default function DevisPage({ initialDetailId = null, setPage }: { initialDetailId?: string | null; setPage?: (p: PageKey) => void }) {
   const {
-    clients, devis, devisLignes, factures, saveDevis, saveFacture, updateDevisStatut, updateDevisAccord, deleteDevis,
+    clients, devis, devisLignes, factures, saveDevis, saveFacture, updateDevisStatut, deleteDevis,
     settings, notify, logActivite,
   } = useAdminData();
   const [selected, setSelected] = useState<string | null>(initialDetailId);
@@ -47,7 +47,7 @@ export default function DevisPage({ initialDetailId = null, setPage }: { initial
             >
               {DEVIS_STATUTS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
-            <button className="btn btn-sm btn-primary" onClick={() => printInvoice({ type: 'devis', numero: d.numero, titre: d.titre, date: d.date, statut: d.statut, date2Label: 'Validité', date2Text: d.validite, client: clients.find((c) => c.id === d.client_id) ?? null, rows: lines, tva: d.tva, notes: d.notes, settings, bonPourAccord: !!d.bon_pour_accord, accordDate: d.accord_date ?? null, signataireAgence: `${settings?.agence_nom ?? "L'Agence de Scott"}${settings?.responsable ? ` — ${settings.responsable}` : ''}` })}><Printer /> PDF</button>
+            <button className="btn btn-sm btn-primary" onClick={() => printInvoice({ type: 'devis', numero: d.numero, titre: d.titre, date: d.date, statut: d.statut, date2Label: 'Validité', date2Text: d.validite, client: clients.find((c) => c.id === d.client_id) ?? null, rows: lines, tva: d.tva, notes: d.notes, settings, signataireAgence: `${settings?.agence_nom ?? "L'Agence de Scott"}${settings?.responsable ? ` — ${settings.responsable}` : ''}` })}><Printer /> PDF</button>
             {factureLiee ? (
               <button className="btn btn-sm btn-secondary" onClick={() => setPage?.('factures')}><Receipt /> Voir la facture</button>
             ) : (
@@ -113,42 +113,6 @@ export default function DevisPage({ initialDetailId = null, setPage }: { initial
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}><span style={{ color: 'var(--muted)' }}>Total HT</span><span>{formatEUR(ht)}</span></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}><span style={{ color: 'var(--muted)' }}>TVA ({d.tva}%)</span><span>{formatEUR(ht * Number(d.tva || 0) / 100)}</span></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 20, fontWeight: 700, color: 'var(--accent)', borderTop: '1px solid var(--border)', paddingTop: 10 }}><span>Total TTC</span><span>{formatEUR(ttc)}</span></div>
-            </div>
-          </div>
-        </div>
-
-        <div className="card" style={{ marginBottom: 20 }}>
-          <div className="card-header">
-            <span className="card-title">Bon pour accord</span>
-            {d.bon_pour_accord ? <Badge statut="Accepté" /> : <span className="badge badge-muted">En attente</span>}
-          </div>
-          <div className="card-body" style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={!!d.bon_pour_accord}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  const today = new Date().toISOString().slice(0, 10);
-                  updateDevisAccord(d.id, checked, checked ? (d.accord_date || today) : d.accord_date ?? null);
-                  notify(checked ? 'Bon pour accord enregistré' : 'Bon pour accord retiré');
-                  logActivite(`Devis ${d.numero} : bon pour accord ${checked ? 'reçu' : 'retiré'}`);
-                }}
-              />
-              Bon pour accord reçu (devis électronique)
-            </label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ color: 'var(--muted)', fontSize: 12 }}>Date</span>
-              <input
-                type="date"
-                value={d.accord_date ?? ''}
-                onChange={(e) => {
-                  updateDevisAccord(d.id, true, e.target.value || null);
-                  notify('Date du bon pour accord enregistrée');
-                }}
-                style={{ fontSize: 13, padding: '6px 10px' }}
-                aria-label="Date du bon pour accord"
-              />
             </div>
           </div>
         </div>
@@ -306,7 +270,7 @@ function DevisForm({
       return;
     }
     onSave(
-      { client_id: clientId, titre, date, validite, statut, tva: tvaVal, notes, bon_pour_accord: devis?.bon_pour_accord ?? false, accord_date: devis?.accord_date ?? null },
+      { client_id: clientId, titre, date, validite, statut, tva: tvaVal, notes },
       lignes.filter((l) => l.description.trim()),
       devis?.id,
     );

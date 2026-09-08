@@ -43,8 +43,6 @@ export interface Devis {
   statut: string;
   tva: number;
   notes: string | null;
-  bon_pour_accord?: boolean;
-  accord_date?: string | null;
   created_at: string;
 }
 

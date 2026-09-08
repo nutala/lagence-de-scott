@@ -24,32 +24,29 @@ export interface InvoiceDoc {
   tva: number;
   notes: string | null;
   settings: Settings | null;
-  bonPourAccord?: boolean;
-  accordDate?: string | null;
   signataireAgence?: string | null;
 }
 
-function signatureHtml(bonPourAccord: boolean, accordDate: string | null, signataireAgence: string | null): string {
-  const accordLine = bonPourAccord
-    ? `<div style="font-size:13px;margin-top:8px">☑ Bon pour accord reçu${accordDate ? ` le ${formatDate(accordDate)}` : ''}</div>`
-    : `<div style="font-size:12px;color:#6b7280;margin-top:8px">Mention manuscrite « Bon pour accord » + signature :</div>
-       <div style="height:64px"></div>`;
+function signatureHtml(signataireAgence: string | null): string {
   return `<div style="display:flex;gap:24px;margin-top:32px">
     <div style="flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px">
-      <div style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Pour ${escapeHtml(signataireAgence || "l'agence")}</div>
-      <div style="font-size:13px;margin-top:8px">Date : ${new Date().toLocaleDateString('fr-FR')}</div>
+      <div style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Pour l'agence</div>
+      <div style="font-size:13px;margin-top:8px">${escapeHtml(signataireAgence || "L'Agence de Scott")}</div>
       <div style="font-size:12px;color:#6b7280;margin-top:8px">Signature :</div>
-      <div style="height:64px"></div>
+      <div style="height:48px"></div>
+      <div style="font-size:13px;margin-top:8px">Date :</div>
     </div>
     <div style="flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px">
-      <div style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Bon pour accord — client</div>
-      ${accordLine}
+      <div style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Pour le client</div>
+      <div style="font-size:12px;margin-top:8px">Mention manuscrite « Bon pour accord » + signature :</div>
+      <div style="height:48px"></div>
+      <div style="font-size:13px;margin-top:8px">Date :</div>
     </div>
   </div>`;
 }
 
 export function buildInvoiceHtml(doc: InvoiceDoc): string {
-  const { type, numero, titre, date, statut, date2Label, date2Text, client, rows, tva, notes, settings, bonPourAccord, accordDate, signataireAgence } = doc;
+  const { type, numero, titre, date, statut, date2Label, date2Text, client, rows, tva, notes, settings, signataireAgence } = doc;
   const ht = rows.reduce((s, l) => s + ((l as unknown as { inclus?: boolean }).inclus ? 0 : Number(l.quantite) * Number(l.prix_unitaire)), 0);
   const tvaVal = Number(tva || 0);
   const ttc = ht * (1 + tvaVal / 100);
@@ -134,7 +131,7 @@ export function buildInvoiceHtml(doc: InvoiceDoc): string {
     </div>
     ${ibanHtml}
     ${notes ? `<div class="notes"><strong>Notes :</strong><br>${formatRichText(notes)}</div>` : ''}
-    ${type === 'devis' ? signatureHtml(bonPourAccord ?? false, accordDate ?? null, signataireAgence ?? null) : ''}
+    ${type === 'devis' ? signatureHtml(signataireAgence ?? null) : ''}
     <div style="margin-top:32px;text-align:center;font-size:11px;color:#6b7280;font-style:italic">TVA non applicable, art. 293 B du CGI</div>
     <div class="foot">${escapeHtml(agence)} — Document généré le ${new Date().toLocaleDateString('fr-FR')}.</div>
   </body></html>`;
