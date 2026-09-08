@@ -84,8 +84,6 @@ export function buildInvoiceHtml(doc: InvoiceDoc): string {
       ${client.telephone ? `<div class="muted">${escapeHtml(client.telephone)}</div>` : ''}`
     : '<div style="font-size:14px;font-weight:600">Client supprimé</div>';
 
-  const rappel = `${type === 'devis' ? 'Devis' : 'Facture'} ${escapeHtml(numero)} du ${formatDate(date)} — ${escapeHtml(client ? `${client.nom}${client.entreprise ? ` · ${client.entreprise}` : ''}` : 'Client supprimé')} — Total TTC ${escapeHtml(formatEUR(ttc))}`;
-
   const ibanHtml =
     type === 'facture' && settings?.iban
       ? `<div class="totals" style="border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;margin-top:28px">
@@ -128,7 +126,7 @@ export function buildInvoiceHtml(doc: InvoiceDoc): string {
       <div class="box"><h3>Émis pour</h3>${clientHtml}</div>
       ${titre ? `<div class="box"><h3>Objet</h3><div style="font-size:14px">${escapeHtml(titre)}</div></div>` : ''}
     </div>
-    <table><thead><tr><th>Description</th><th style="text-align:right">Qté</th><th style="text-align:right">Prix unitaire</th><th style="text-align:right">Total</th></tr></thead><tbody>${rowsHtml}</tbody><tfoot><tr><td colspan="4" style="border:none;font-size:10px;color:#9ca3af;padding:6px 12px 0">${rappel}</td></tr></tfoot></table>
+    <table><thead><tr><th>Description</th><th style="text-align:right">Qté</th><th style="text-align:right">Prix unitaire</th><th style="text-align:right">Total</th></tr></thead><tbody>${rowsHtml}</tbody></table>
     <div class="totals">
       <div><span>Total HT</span><span>${formatEUR(ht)}</span></div>
       <div><span>TVA (${tvaVal}%)</span><span>${formatEUR(ht * tvaVal / 100)}</span></div>
@@ -136,7 +134,7 @@ export function buildInvoiceHtml(doc: InvoiceDoc): string {
     </div>
     ${ibanHtml}
     ${notes ? `<div class="notes">${formatRichText(notes)}</div>` : ''}
-    ${type === 'devis' ? signatureHtml(signataireAgence ?? null, rappel) : ''}
+    ${type === 'devis' ? signatureHtml(signataireAgence ?? null, `Devis ${escapeHtml(numero)} du ${formatDate(date)} — ${escapeHtml(client ? `${client.nom}${client.entreprise ? ` · ${client.entreprise}` : ''}` : 'Client supprimé')} — Total TTC ${escapeHtml(formatEUR(ttc))}`) : ''}
     <div style="margin-top:32px;text-align:center;font-size:11px;color:#6b7280;font-style:italic">TVA non applicable, art. 293 B du CGI</div>
     <div class="foot">${escapeHtml(agence)} — Document généré le ${new Date().toLocaleDateString('fr-FR')}.</div>
   </body></html>`;
