@@ -38,9 +38,9 @@ function signatureHtml(signataireAgence: string | null): string {
     </div>
     <div style="flex:1;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px">
       <div style="font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280">Pour le client</div>
+      <div style="font-size:13px;margin-top:8px">Date :</div>
       <div style="font-size:12px;margin-top:8px">Mention manuscrite « Bon pour accord » + signature :</div>
       <div style="height:48px"></div>
-      <div style="font-size:13px;margin-top:8px">Date :</div>
     </div>
   </div>`;
 }
