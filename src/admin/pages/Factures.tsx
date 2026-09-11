@@ -224,18 +224,19 @@ function FactureForm({
         </div>
 
         <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 16, marginBottom: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
             <span style={{ fontSize: 13, fontWeight: 600 }}>Prestations</span>
             <button type="button" className="btn btn-sm btn-ghost" onClick={() => setLignes((prev) => [...prev, { description: '', quantite: 1, prix_unitaire: 0 }])}>
               <Plus /> Ajouter une ligne
             </button>
           </div>
+          <p style={{ fontSize: 12, color: 'var(--muted)', margin: '0 0 12px' }}>Astuce : un prix unitaire négatif permet d'ajouter une remise ou de déduire un acompte déjà versé.</p>
           {lignes.map((l, i) => (
             <div key={i} style={{ borderBottom: '1px solid var(--border)', paddingBottom: 10, marginBottom: 10 }}>
               <div className="form-row line-row" style={{ alignItems: 'center', marginBottom: 8 }}>
                 <input placeholder="Description de la prestation" value={l.description} onChange={(e) => updateLigne(i, { description: e.target.value })} />
                 <input type="number" min="0" step="any" placeholder="Qté" value={String(l.quantite)} onChange={(e) => updateLigne(i, { quantite: Number(e.target.value) })} />
-                <input type="number" min="0" step="0.01" placeholder="Prix unitaire" value={String(l.prix_unitaire)} onChange={(e) => updateLigne(i, { prix_unitaire: Number(e.target.value) })} disabled={!!l.inclus} style={l.inclus ? { opacity: 0.5 } : undefined} />
+                <input type="number" step="0.01" placeholder="Prix unitaire (négatif = déduction)" value={String(l.prix_unitaire)} onChange={(e) => updateLigne(i, { prix_unitaire: Number(e.target.value) })} disabled={!!l.inclus} style={l.inclus ? { opacity: 0.5 } : undefined} />
               <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, whiteSpace: 'nowrap', cursor: 'pointer' }}><input type="checkbox" checked={!!l.inclus} onChange={(e) => updateLigne(i, { inclus: e.target.checked })} /> Inclus</label>
               <span style={{ display: 'flex', gap: 2 }}>
                 <button type="button" className="btn btn-ghost btn-icon" onClick={() => moveLigne(i, -1)} disabled={i === 0} aria-label="Monter la ligne" title="Monter"><ChevronUp /></button>
