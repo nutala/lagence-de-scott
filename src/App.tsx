@@ -13,6 +13,7 @@ import gravioImg from './assets/images/gravio_screenshot.png';
 import melissaImg from './assets/images/Melissa.jpg';
 import AdminApp from './admin/AdminApp';
 const MentionsLegales = lazy(() => import('./MentionsLegales'));
+const CGV = lazy(() => import('./CGV'));
 import Preloader from './Preloader';
 import PacksSection from './Packs';
 
@@ -138,7 +139,7 @@ const ProjectItem = ({
   );
 };
 
-function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
+function MainContent({ onShowMentions, onShowCGV }: { onShowMentions: () => void; onShowCGV: () => void }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -703,6 +704,7 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
           </div>
           <div className="flex gap-8 text-sm font-bold tracking-wider text-slate-400 uppercase">
             <button onClick={onShowMentions} className="hover:text-white transition-colors uppercase font-bold text-sm tracking-wider">Mentions Légales</button>
+            <button onClick={onShowCGV} className="hover:text-white transition-colors uppercase font-bold text-sm tracking-wider">CGV</button>
             <a href="https://www.instagram.com/lagencedescott" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>
             <a href="https://www.facebook.com/profile.php?id=61590341791637" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Facebook</a>
           </div>
@@ -745,7 +747,35 @@ function MainContent({ onShowMentions }: { onShowMentions: () => void }) {
 
 function PublicSite() {
   const [showMentions, setShowMentions] = useState(false);
+  const [showCGV, setShowCGV] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Deep-link : #cgv ouvre la modale CGV (URL partageable lagencedescott.fr/#cgv).
+  // L'ouverture pousse une entrée d'historique pour que le bouton retour ferme la modale.
+  useEffect(() => {
+    if (window.location.hash === '#cgv') setShowCGV(true);
+    if (window.location.hash === '#mentions-legales') setShowMentions(true);
+    const onPopState = () => {
+      setShowCGV(window.location.hash === '#cgv');
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  const openCGV = () => {
+    if (window.location.hash !== '#cgv') history.pushState({ cgv: true }, '', '#cgv');
+    setShowCGV(true);
+  };
+
+  const closeCGV = () => {
+    // Si on a poussé l'entrée #cgv, le bouton retour natif referme la modale.
+    if (history.state && (history.state as { cgv?: boolean }).cgv) {
+      history.back();
+    } else {
+      setShowCGV(false);
+      if (window.location.hash === '#cgv') history.replaceState(null, '', window.location.pathname);
+    }
+  };
 
   return (
     <>
@@ -753,12 +783,17 @@ function PublicSite() {
         {isLoading && <Preloader key="preloader" onComplete={() => setIsLoading(false)} />}
       </AnimatePresence>
       
-      <MainContent onShowMentions={() => setShowMentions(true)} />
+      <MainContent onShowMentions={() => setShowMentions(true)} onShowCGV={openCGV} />
       
       <Suspense fallback={null}>
         <AnimatePresence>
           {showMentions && (
             <MentionsLegales onClose={() => setShowMentions(false)} />
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {showCGV && (
+            <CGV onClose={closeCGV} />
           )}
         </AnimatePresence>
       </Suspense>

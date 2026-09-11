@@ -7,6 +7,15 @@
     <link rel="canonical" href="https://lagencedescott.fr" />
     <title>L'Agence de Scott</title>
     <meta name="robots" content="noindex" />
+    <script>
+      // GitHub Pages sert ce fichier pour les chemins inconnus :
+      // /cgv redirige vers la page d'accueil avec la modale CGV ouverte.
+      (function () {
+        if (window.location.pathname.replace(/\/+$/, '') === '/cgv') {
+          window.location.replace('/#cgv');
+        }
+      })();
+    </script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
