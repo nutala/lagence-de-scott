@@ -1,10 +1,18 @@
 import React, { useState, FormEvent, useEffect, useRef } from 'react';
-import { Plus, ArrowLeft, Trash2, Pencil, Printer, X, Receipt, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, ArrowLeft, Trash2, Pencil, Printer, X, Receipt, ChevronUp, ChevronDown, Copy } from 'lucide-react';
 import { useAdminData } from '../AdminDataContext';
 import { Modal, Badge, EmptyState } from '../components';
 import { formatEUR, formatDate, clientName, devisTotal, splitDetails, formatRichText, DEVIS_STATUTS } from '../types';
 import type { Devis, DevisLigne, PageKey } from '../types';
 import { printInvoice } from '../pdf';
+
+type DevisFields = Omit<Devis, 'id' | 'created_at' | 'numero'>;
+
+interface DevisDuplicate {
+  sourceNumero: string;
+  fields: DevisFields;
+  lignes: DevisLigne[];
+}
 
 export default function DevisPage({ initialDetailId = null, setPage }: { initialDetailId?: string | null; setPage?: (p: PageKey) => void }) {
   const {
@@ -13,7 +21,35 @@ export default function DevisPage({ initialDetailId = null, setPage }: { initial
   } = useAdminData();
   const [selected, setSelected] = useState<string | null>(initialDetailId);
   const [modal, setModal] = useState<'new' | Devis | null>(null);
+  const [duplicate, setDuplicate] = useState<DevisDuplicate | null>(null);
   const [statutFilter, setStatutFilter] = useState('Tous');
+
+  const buildDuplicate = (source: Devis): DevisDuplicate => {
+    const lignes = devisLignes
+      .filter((l) => l.devis_id === source.id)
+      .map((l) => ({
+        description: l.description,
+        quantite: l.quantite,
+        prix_unitaire: l.prix_unitaire,
+        inclus: !!l.inclus,
+        details: l.details ?? null,
+      }));
+    return {
+      sourceNumero: source.numero,
+      fields: {
+        client_id: source.client_id,
+        titre: source.titre,
+        date: new Date().toISOString().slice(0, 10),
+        validite: source.validite,
+        statut: 'Brouillon',
+        tva: source.tva,
+        notes: source.notes,
+      },
+      lignes: lignes.length ? lignes : [{ description: '', quantite: 1, prix_unitaire: 0 }],
+    };
+  };
+
+  const closeDuplicate = () => setDuplicate(null);
 
   useEffect(() => {
     if (initialDetailId) setSelected(initialDetailId);
@@ -78,6 +114,7 @@ export default function DevisPage({ initialDetailId = null, setPage }: { initial
               </button>
             )}
             <button className="btn btn-sm btn-secondary" onClick={() => setModal(d)}><Pencil /> Modifier</button>
+            <button className="btn btn-sm btn-secondary" onClick={() => setDuplicate(buildDuplicate(d))}><Copy /> Dupliquer</button>
             <button
               className="btn btn-sm btn-danger"
               onClick={() => {
@@ -163,6 +200,21 @@ export default function DevisPage({ initialDetailId = null, setPage }: { initial
             }}
           />
         )}
+        {duplicate && (
+          <DevisForm
+            devis={null}
+            initialLines={duplicate.lignes}
+            initialFields={duplicate.fields}
+            duplicateFromNumero={duplicate.sourceNumero}
+            onClose={closeDuplicate}
+            onSave={async (fields, lignes) => {
+              await saveDevis(fields, lignes);
+              notify('Devis dupliqué');
+              logActivite(`Devis ${duplicate.sourceNumero} dupliqué pour ${clientName(clients, fields.client_id)}`);
+              closeDuplicate();
+            }}
+          />
+        )}
       </div>
     );
   }
@@ -183,7 +235,7 @@ export default function DevisPage({ initialDetailId = null, setPage }: { initial
         <div className="card-body" style={{ padding: 0 }}>
           {filtered.length ? (
             <table>
-              <thead><tr><th>N°</th><th>Client</th><th>Titre</th><th>Total TTC</th><th>Statut</th><th>Date</th></tr></thead>
+              <thead><tr><th>N°</th><th>Client</th><th>Titre</th><th>Total TTC</th><th>Statut</th><th>Date</th><th style={{ width: 90 }}>Actions</th></tr></thead>
               <tbody>
                 {filtered.map((d) => {
                   const ht = devisTotal(devisLignes, d.id);
@@ -196,6 +248,16 @@ export default function DevisPage({ initialDetailId = null, setPage }: { initial
                       <td style={{ fontWeight: 600 }}>{formatEUR(ttc)}</td>
                       <td><Badge statut={d.statut} /></td>
                       <td style={{ color: 'var(--muted)', fontSize: 13 }}>{formatDate(d.date)}</td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <button
+                          className="btn btn-sm btn-ghost"
+                          onClick={() => setDuplicate(buildDuplicate(d))}
+                          aria-label={`Dupliquer le devis ${d.numero}`}
+                          title={`Dupliquer le devis ${d.numero}`}
+                        >
+                          <Copy />
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -220,6 +282,21 @@ export default function DevisPage({ initialDetailId = null, setPage }: { initial
           }}
         />
       )}
+      {duplicate && (
+        <DevisForm
+          devis={null}
+          initialLines={duplicate.lignes}
+          initialFields={duplicate.fields}
+          duplicateFromNumero={duplicate.sourceNumero}
+          onClose={closeDuplicate}
+          onSave={async (fields, lignes) => {
+            await saveDevis(fields, lignes);
+            notify('Devis dupliqué');
+            logActivite(`Devis ${duplicate.sourceNumero} dupliqué pour ${clientName(clients, fields.client_id)}`);
+            closeDuplicate();
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -227,22 +304,26 @@ export default function DevisPage({ initialDetailId = null, setPage }: { initial
 function DevisForm({
   devis,
   initialLines,
+  initialFields,
+  duplicateFromNumero,
   onClose,
   onSave,
 }: {
   devis: Devis | null;
   initialLines: DevisLigne[];
+  initialFields?: DevisFields;
+  duplicateFromNumero?: string;
   onClose: () => void;
   onSave: (fields: Omit<Devis, 'id' | 'created_at' | 'numero'>, lignes: DevisLigne[], id?: string) => Promise<void>;
 }) {
   const { clients, settings } = useAdminData();
-  const [clientId, setClientId] = useState(devis?.client_id ?? '');
-  const [titre, setTitre] = useState(devis?.titre ?? '');
-  const [date, setDate] = useState(devis?.date ?? new Date().toISOString().slice(0, 10));
-  const [validite, setValidite] = useState(devis?.validite ?? '30 jours');
-  const [statut, setStatut] = useState(devis?.statut ?? 'Brouillon');
-  const [tva, setTva] = useState(devis ? String(devis.tva) : String(settings?.tva_default ?? 20));
-  const [notes, setNotes] = useState(devis?.notes ?? '');
+  const [clientId, setClientId] = useState(initialFields?.client_id ?? devis?.client_id ?? '');
+  const [titre, setTitre] = useState(initialFields?.titre ?? devis?.titre ?? '');
+  const [date, setDate] = useState(initialFields?.date ?? devis?.date ?? new Date().toISOString().slice(0, 10));
+  const [validite, setValidite] = useState(initialFields?.validite ?? devis?.validite ?? '30 jours');
+  const [statut, setStatut] = useState(initialFields?.statut ?? devis?.statut ?? 'Brouillon');
+  const [tva, setTva] = useState(initialFields ? String(initialFields.tva) : devis ? String(devis.tva) : String(settings?.tva_default ?? 20));
+  const [notes, setNotes] = useState(initialFields?.notes ?? devis?.notes ?? '');
   const [lignes, setLignes] = useState<DevisLigne[]>(initialLines.length ? initialLines : [{ description: '', quantite: 1, prix_unitaire: 0 }]);
 
   const ht = lignes.reduce((s, l) => s + (l.inclus ? 0 : (Number(l.quantite) || 0) * (Number(l.prix_unitaire) || 0)), 0);
@@ -293,7 +374,7 @@ function DevisForm({
   };
 
   return (
-    <Modal title={devis ? `Modifier le devis ${devis.numero}` : 'Nouveau devis'} onClose={onClose} wide closeOnOverlayClick={false}>
+    <Modal title={duplicateFromNumero ? `Dupliquer le devis ${duplicateFromNumero}` : devis ? `Modifier le devis ${devis.numero}` : 'Nouveau devis'} onClose={onClose} wide closeOnOverlayClick={false}>
       <form onSubmit={handleSubmit}>
         <div className="form-row">
           <div className="form-group">
@@ -368,7 +449,7 @@ function DevisForm({
             <label style={{ marginBottom: 0 }}>Notes / Conditions</label>
             <button type="button" className="btn btn-sm btn-ghost" onClick={wrapBold} title="Gras : entoure la sélection de **"><strong>G</strong></button>
           </div>
-          <textarea ref={notesRef} rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Conditions de paiement, délais… **acompte de 50 %**" />
+          <textarea ref={notesRef} rows={3} value={notes ?? ''} onChange={(e) => setNotes(e.target.value)} placeholder="Conditions de paiement, délais… **acompte de 50 %**" />
         </div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 20 }}>
           <button type="button" className="btn btn-secondary" onClick={onClose}>Annuler</button>

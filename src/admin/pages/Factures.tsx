@@ -1,14 +1,53 @@
 import React, { useState, FormEvent, useRef } from 'react';
-import { Plus, Trash2, Pencil, Printer, X, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Pencil, Printer, X, ChevronUp, ChevronDown, Copy } from 'lucide-react';
 import { useAdminData } from '../AdminDataContext';
 import { Modal, EmptyState } from '../components';
 import { formatEUR, formatDate, clientName, facturesTotal, FACTURE_STATUTS } from '../types';
 import type { Facture, FactureLigne } from '../types';
 import { printInvoice } from '../pdf';
 
+type FactureFields = Omit<Facture, 'id' | 'created_at' | 'numero' | 'montant'>;
+
+interface FactureDuplicate {
+  sourceNumero: string;
+  fields: FactureFields;
+  lignes: FactureLigne[];
+}
+
 export default function FacturesPage() {
   const { clients, devis, factures, facturesLignes, settings, saveFacture, updateFactureStatut, deleteFacture, notify, logActivite } = useAdminData();
   const [modal, setModal] = useState<'new' | Facture | null>(null);
+  const [duplicate, setDuplicate] = useState<FactureDuplicate | null>(null);
+
+  const buildDuplicate = (source: Facture): FactureDuplicate => {
+    const lignes = facturesLignes
+      .filter((l) => l.facture_id === source.id)
+      .map((l) => ({
+        description: l.description,
+        quantite: l.quantite,
+        prix_unitaire: l.prix_unitaire,
+        inclus: !!l.inclus,
+        details: l.details ?? null,
+      }));
+    const today = new Date();
+    const echeance = new Date(today.getTime() + 30 * 86400000).toISOString().slice(0, 10);
+    return {
+      sourceNumero: source.numero,
+      fields: {
+        client_id: source.client_id,
+        titre: source.titre,
+        date: today.toISOString().slice(0, 10),
+        statut: 'Brouillon',
+        tva: source.tva,
+        notes: source.notes,
+        echeance,
+        devis_id: null,
+      },
+      lignes: lignes.length ? lignes : [{ description: '', quantite: 1, prix_unitaire: 0 }],
+    };
+  };
+
+  const closeDuplicate = () => setDuplicate(null);
 
   const encaisse = factures.filter((f) => f.statut === 'Payée').reduce((s, f) => s + Number(f.montant), 0);
   const enAttente = factures.filter((f) => f.statut === 'Envoyée' || f.statut === 'Brouillon' || f.statut === 'Relancée').reduce((s, f) => s + Number(f.montant), 0);
@@ -42,7 +81,7 @@ export default function FacturesPage() {
         <div className="card-body" style={{ padding: 0 }}>
           {factures.length ? (
             <table>
-              <thead><tr><th>N°</th><th>Client</th><th>Origine</th><th>Titre</th><th>Total TTC</th><th>Statut</th><th>Date</th><th>Échéance</th><th style={{ width: 130 }}>Actions</th></tr></thead>
+              <thead><tr><th>N°</th><th>Client</th><th>Origine</th><th>Titre</th><th>Total TTC</th><th>Statut</th><th>Date</th><th>Échéance</th><th style={{ width: 170 }}>Actions</th></tr></thead>
               <tbody>
                 {factures.map((f) => {
                   const lignes = facturesLignes.filter((l) => l.facture_id === f.id);
@@ -93,6 +132,14 @@ export default function FacturesPage() {
                           <button className="btn btn-sm btn-ghost" onClick={() => setModal(f)} aria-label="Modifier"><Pencil /></button>
                           <button
                             className="btn btn-sm btn-ghost"
+                            onClick={() => setDuplicate(buildDuplicate(f))}
+                            aria-label={`Dupliquer la facture ${f.numero}`}
+                            title={`Dupliquer la facture ${f.numero}`}
+                          >
+                            <Copy />
+                          </button>
+                          <button
+                            className="btn btn-sm btn-ghost"
                             style={{ color: 'var(--danger)' }}
                             onClick={() => {
                               if (window.confirm(`Supprimer la facture ${f.numero} ?`)) {
@@ -130,29 +177,50 @@ export default function FacturesPage() {
           }}
         />
       )}
+      {duplicate && (
+        <FactureForm
+          facture={null}
+          initialFields={duplicate.fields}
+          initialLines={duplicate.lignes}
+          duplicateFromNumero={duplicate.sourceNumero}
+          onClose={closeDuplicate}
+          onSave={async (fields, lignes) => {
+            await saveFacture(fields, lignes);
+            notify('Facture dupliquée');
+            logActivite(`Facture ${duplicate.sourceNumero} dupliquée pour ${clientName(clients, fields.client_id)}`);
+            closeDuplicate();
+          }}
+        />
+      )}
     </div>
   );
 }
 
 function FactureForm({
   facture,
+  initialFields,
+  initialLines,
+  duplicateFromNumero,
   onClose,
   onSave,
 }: {
   facture: Facture | null;
+  initialFields?: FactureFields;
+  initialLines?: FactureLigne[];
+  duplicateFromNumero?: string;
   onClose: () => void;
   onSave: (fields: Omit<Facture, 'id' | 'created_at' | 'numero' | 'montant'>, lignes: FactureLigne[], id?: string) => Promise<void>;
 }) {
   const { clients, settings, facturesLignes } = useAdminData();
-  const [clientId, setClientId] = useState(facture?.client_id ?? '');
-  const [titre, setTitre] = useState(facture?.titre ?? '');
-  const [date, setDate] = useState(facture?.date ?? new Date().toISOString().slice(0, 10));
-  const [echeance, setEcheance] = useState(facture?.echeance ?? '');
-  const [statut, setStatut] = useState(facture?.statut ?? 'Brouillon');
-  const [tva, setTva] = useState(facture ? String(facture.tva) : String(settings?.tva_default ?? 20));
-  const [notes, setNotes] = useState(facture?.notes ?? '');
+  const [clientId, setClientId] = useState(initialFields?.client_id ?? facture?.client_id ?? '');
+  const [titre, setTitre] = useState(initialFields?.titre ?? facture?.titre ?? '');
+  const [date, setDate] = useState(initialFields?.date ?? facture?.date ?? new Date().toISOString().slice(0, 10));
+  const [echeance, setEcheance] = useState(initialFields?.echeance ?? facture?.echeance ?? '');
+  const [statut, setStatut] = useState(initialFields?.statut ?? facture?.statut ?? 'Brouillon');
+  const [tva, setTva] = useState(initialFields ? String(initialFields.tva) : facture ? String(facture.tva) : String(settings?.tva_default ?? 20));
+  const [notes, setNotes] = useState(initialFields?.notes ?? facture?.notes ?? '');
   const [lignes, setLignes] = useState<FactureLigne[]>(
-    facture ? (facturesLignes.filter((l) => l.facture_id === facture.id).length ? facturesLignes.filter((l) => l.facture_id === facture.id) : [{ description: '', quantite: 1, prix_unitaire: 0 }]) : [{ description: '', quantite: 1, prix_unitaire: 0 }],
+    initialLines ?? (facture ? (facturesLignes.filter((l) => l.facture_id === facture.id).length ? facturesLignes.filter((l) => l.facture_id === facture.id) : [{ description: '', quantite: 1, prix_unitaire: 0 }]) : [{ description: '', quantite: 1, prix_unitaire: 0 }]),
   );
 
   const ht = lignes.reduce((s, l) => s + (l.inclus ? 0 : (Number(l.quantite) || 0) * (Number(l.prix_unitaire) || 0)), 0);
@@ -180,7 +248,7 @@ function FactureForm({
       return;
     }
     onSave(
-      { client_id: clientId, titre, date, statut, tva: tvaVal, notes, echeance: echeance || null, devis_id: facture?.devis_id ?? null },
+      { client_id: clientId, titre, date, statut, tva: tvaVal, notes, echeance: echeance || null, devis_id: initialFields?.devis_id ?? facture?.devis_id ?? null },
       lignes.filter((l) => l.description.trim()),
       facture?.id,
     );
@@ -203,7 +271,7 @@ function FactureForm({
   };
 
   return (
-    <Modal title={facture ? `Modifier la facture ${facture.numero}` : 'Nouvelle facture'} onClose={onClose} wide closeOnOverlayClick={false}>
+    <Modal title={duplicateFromNumero ? `Dupliquer la facture ${duplicateFromNumero}` : facture ? `Modifier la facture ${facture.numero}` : 'Nouvelle facture'} onClose={onClose} wide closeOnOverlayClick={false}>
       <form onSubmit={handleSubmit}>
         <div className="form-row">
           <div className="form-group">
