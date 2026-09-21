@@ -149,6 +149,8 @@ function MainContent({ onShowMentions, onShowCGV }: { onShowMentions: () => void
   const [toastType, setToastType] = useState<"success" | "error" | "info">("success");
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [origine, setOrigine] = useState<string | null>(null);
+  const [offre, setOffre] = useState<string | null>(null);
 
   // Parallax refs
   const heroRef = useRef(null);
@@ -163,6 +165,24 @@ function MainContent({ onShowMentions, onShowCGV }: { onShowMentions: () => void
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Arrivée depuis Scottly (bouton « Demander une démo » : lagencedescott.fr/?s=scottly#contact)
+  // ou lien direct vers le formulaire. On mémorise l'origine pour l'objet du mail, et on amène
+  // le visiteur directement sur le formulaire de contact.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const origine = params.get('s');
+    if (origine) setOrigine(origine);
+    const offre = params.get('offre');
+    if (offre) setOffre(offre);
+    if (origine || window.location.hash === '#contact') {
+      // Le préloader bloque le scroll ~0,8 s : on attend qu'il libère la page.
+      const timer = setTimeout(() => {
+        document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 1100);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const scrollTo = (id: string) => {
@@ -214,7 +234,9 @@ function MainContent({ onShowMentions, onShowCGV }: { onShowMentions: () => void
           name,
           email,
           message,
-          _subject: "Nouveau message de L'Agence de Scott",
+          _subject: origine === 'scottly'
+            ? `Demande de démo Scottly${offre ? ` — offre ${offre.charAt(0).toUpperCase() + offre.slice(1)}` : ''}`
+            : "Nouveau message de L'Agence de Scott",
           _captcha: "false"
         })
       });
@@ -587,6 +609,12 @@ function MainContent({ onShowMentions, onShowCGV }: { onShowMentions: () => void
                     className="w-full space-y-8" 
                     noValidate
                   >
+                    {origine === 'scottly' && (
+                      <p className="text-sm text-sun-400 border border-sun-500/30 bg-sun-500/5 rounded-xl px-4 py-3 leading-relaxed">
+                        Vous venez de Scottly. Dites-moi en deux mots votre activité et votre volume
+                        d'appels : je vous rappelle pour une démonstration.
+                      </p>
+                    )}
                     <div className="space-y-6">
                       <div className="relative group">
                         <input type="text" id="name" name="name" required className="w-full bg-transparent border-b-2 border-white/20 py-4 text-xl text-white placeholder:text-transparent focus:outline-none focus:border-sun-500 peer transition-colors" placeholder="Nom" onChange={() => setFormErrors(prev => ({...prev, name: ''}))} />
