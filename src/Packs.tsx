@@ -26,7 +26,7 @@ type Pack = {
 
 const PACKS: Pack[] = [
   {
-    name: "Essentiel",
+    name: "Vitrine",
     desc: "Pour lancer votre présence en ligne.",
     priceLabel: "À partir de",
     price: "490",
@@ -38,7 +38,7 @@ const PACKS: Pack[] = [
       { icon: Globe, label: "Hébergement & mise en ligne" },
       { icon: Search, label: "SEO de base" },
     ],
-    cta: "Choisir l'Essentiel",
+    cta: "Choisir Vitrine",
     variant: "outline",
   },
   {
@@ -83,7 +83,7 @@ const TRUST = [
   { icon: Heart, label: "Passionné & Engagé", sub: "Votre projet, ma priorité" },
 ];
 
-function PackCard({ pack, onCta, index }: { pack: Pack; onCta: () => void; index: number }) {
+function PackCard({ pack, onCta, index }: { pack: Pack; onCta: () => void; index: number; key?: string }) {
   const isSignature = pack.variant === "signature";
 
   return (
