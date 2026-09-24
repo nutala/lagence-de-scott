@@ -215,6 +215,7 @@ export function formatDateShort(d: string | null | undefined): string {
 }
 
 export function clientName(clients: Client[], id: string | null): string {
+  if (!id) return 'Aucun client';
   const c = clients.find((x) => x.id === id);
   return c ? c.nom : 'Client supprimé';
 }
