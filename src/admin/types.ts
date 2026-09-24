@@ -220,6 +220,7 @@ export function clientName(clients: Client[], id: string | null): string {
 }
 
 export function projetTitle(projets: Projet[], id: string | null): string {
+  if (!id) return 'Aucun projet';
   const p = projets.find((x) => x.id === id);
   return p ? p.titre : 'Projet supprimé';
 }
