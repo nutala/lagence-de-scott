@@ -360,12 +360,11 @@ export default function PlanningPage() {
         <ConfigModal
           cfg={cfg}
           onClose={() => setModal(null)}
-          onSaved={async (c) => {
+          onConfigured={async (c) => {
             setCfg(c);
             setCfgEtat('pret');
             setCfgErreur(null);
             setAgendaErreur(null);
-            notify('Agenda Google connecté');
             try {
               const info = await agendaPing(c);
               setAgendaNom(info.agenda);
@@ -373,7 +372,6 @@ export default function PlanningPage() {
               setAgendaNom(null);
             }
             chargerEvenements(c, debutPlage, finPlage);
-            setModal(null);
           }}
           onCleared={async () => {
             await clearAgendaConfig();
@@ -645,21 +643,23 @@ function JalonForm({
 function ConfigModal({
   cfg,
   onClose,
-  onSaved,
+  onConfigured,
   onCleared,
 }: {
   cfg: AgendaConfig | null;
   onClose: () => void;
-  onSaved: (c: AgendaConfig) => Promise<void>;
+  onConfigured: (c: AgendaConfig) => Promise<void>;
   onCleared: () => Promise<void>;
 }) {
   const [url, setUrl] = useState(cfg?.url ?? '');
   const [code, setCode] = useState(cfg?.code ?? '');
   const [essai, setEssai] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [enregistre, setEnregistre] = useState(false);
   const [occupe, setOccupe] = useState(false);
 
-  const tester = async (): Promise<AgendaConfig | null> => {
+  /** Contrôle de forme avant tout appel : l'URL doit être celle du déploiement, rien après. */
+  const verifierFormat = (): AgendaConfig | null => {
     setErreur(null);
     setEssai(null);
     const c = { url: url.trim(), code: code.trim() };
@@ -667,31 +667,46 @@ function ConfigModal({
       setErreur("L'URL /exec et le code secret sont tous les deux nécessaires.");
       return null;
     }
-    if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec/.test(c.url)) {
-      setErreur("L'URL doit être celle du déploiement et finir par /exec (pas /dev).");
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(c.url)) {
+      setErreur(
+        "L'URL doit être exactement celle du déploiement et se terminer par /exec — rien après (ni espace, ni /exec>, ni /dev).",
+      );
       return null;
     }
-    setOccupe(true);
+    return c;
+  };
+
+  const tester = async (c: AgendaConfig): Promise<boolean> => {
     try {
       const info = await agendaPing(c);
       setEssai(`Connexion réussie — agenda « ${info.agenda} » (${info.fuseau}).`);
-      return c;
+      return true;
     } catch (e) {
       setErreur(e instanceof AgendaError ? e.message : String(e));
-      return null;
-    } finally {
-      setOccupe(false);
+      return false;
     }
+  };
+
+  const testerSeul = async () => {
+    const c = verifierFormat();
+    if (!c) return;
+    setOccupe(true);
+    await tester(c);
+    setOccupe(false);
   };
 
   const enregistrer = async (e: FormEvent) => {
     e.preventDefault();
-    const c = await tester();
+    const c = verifierFormat();
     if (!c) return;
     setOccupe(true);
     try {
+      // On enregistre AVANT de tester : la configuration reste en place même si
+      // le pont ne répond pas encore, sinon il n'y a rien à diagnostiquer.
       await saveAgendaConfig(c);
-      await onSaved(c);
+      setEnregistre(true);
+      await onConfigured(c);
+      await tester(c);
     } catch (err) {
       if (tableIntegrationsAbsente(err)) {
         setErreur("Table « integrations » absente : exécuter la migration 20260923120000_add_integrations.sql dans Supabase.");
@@ -720,6 +735,11 @@ function ConfigModal({
           <input type="password" value={code} onChange={(e) => setCode(e.target.value)} placeholder="••••••••" spellCheck={false} />
         </div>
 
+        {enregistre && (
+          <div className="alert alert-success" style={{ marginTop: 6 }}>
+            Configuration enregistrée dans Supabase.
+          </div>
+        )}
         {essai && <div className="alert alert-success" style={{ marginTop: 6 }}>{essai}</div>}
         {erreur && <div className="alert alert-warning" style={{ marginTop: 6 }}><AlertTriangle /> <span>{erreur}</span></div>}
 
@@ -740,7 +760,7 @@ function ConfigModal({
             </button>
           ) : <span />}
           <div style={{ display: 'flex', gap: 10 }}>
-            <button type="button" className="btn btn-secondary" onClick={tester} disabled={occupe}>Tester</button>
+            <button type="button" className="btn btn-secondary" onClick={testerSeul} disabled={occupe}>Tester</button>
             <button type="submit" className="btn btn-primary" disabled={occupe}>
               {occupe ? 'Vérification…' : 'Enregistrer'}
             </button>

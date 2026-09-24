@@ -61,10 +61,39 @@ const MESSAGES: Record<string, string> = {
   plage_invalide: 'Plage de dates invalide.',
   date_invalide: 'Date invalide envoyée au script Google.',
   url_manquante: "L'URL du script Google n'est pas configurée.",
-  reseau: 'Impossible de joindre le script Google — connexion Internet ou déploiement retiré ?',
+  reseau:
+    "Impossible de joindre le script Google (le déploiement est-il réglé sur « Qui a accès : Tout le monde » ?).",
   reponse_non_json:
     "Réponse illisible du script Google. Vérifier que le déploiement est bien réglé sur « Tout le monde » et que l'URL finit par /exec.",
+  propriete_AGENDA_BRIDGE_CODE_absente:
+    "Le script Google n'a pas la propriété AGENDA_BRIDGE_CODE (Apps Script → Paramètres du projet → Propriétés du script).",
 };
+
+/** Texte lisible d'une page HTML de Google (titre + corps, sans balises). */
+function texteDePage(html: string): string {
+  const corps = html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (corps) return corps.slice(0, 200);
+  const titre = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+  return titre ? titre[1].trim().slice(0, 200) : '';
+}
+
+/** Piste de correction quand Google renvoie une page au lieu du JSON. */
+function pisteDePage(page: string): string {
+  if (/doGet/i.test(page) && /introuvable|not found/i.test(page)) {
+    return " Le déploiement ne contient pas le script à jour : Apps Script → Gérer les déploiements → crayon → Version : « Nouvelle version » → Déployer.";
+  }
+  if (/connexion|sign in|choisir un compte|choose an account/i.test(page)) {
+    return " Le déploiement exige une connexion Google : Apps Script → Gérer les déploiements → crayon → « Qui a accès » : Tout le monde.";
+  }
+  return '';
+}
 
 export function messageAgenda(code: string, repli?: string): string {
   return MESSAGES[code] || repli || `Erreur du pont Google (${code}).`;
@@ -108,6 +137,15 @@ async function appel<T>(cfg: AgendaConfig, params: Record<string, string | undef
   try {
     data = JSON.parse(texte);
   } catch {
+    // Google renvoie une page HTML quand le déploiement est mal réglé : on
+    // remonte son texte, c'est le diagnostic le plus utile.
+    const page = texteDePage(texte);
+    if (page) {
+      throw new AgendaError(
+        'reponse_non_json',
+        `Le script Google a répondu une page au lieu de données : « ${page} ».${pisteDePage(page)}`,
+      );
+    }
     throw new AgendaError('reponse_non_json', messageAgenda('reponse_non_json'));
   }
   if (!data.ok) {
