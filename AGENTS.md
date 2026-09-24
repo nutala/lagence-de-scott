@@ -34,10 +34,8 @@ npm run lint
 | `src/admin/` | dashboard : `AdminApp`, `AdminDataContext`, pages Clients / Devis / Factures / Projets / Taches / Planning / Settings |
 | `src/admin/pdf.ts` | `buildInvoiceHtml()` — le HTML de devis/facture, imprimé par le navigateur |
 | `src/admin/types.ts` | types + `nextNumero()` (numérotation des documents) |
-| `src/admin/agenda.ts` | client du pont « Agenda Google » (liste / création / modification / suppression) |
 | `supabase/schema.sql` | schéma complet (10 tables) + policies RLS |
 | `scripts/crm_agent.py` | connecteur agent : auth Supabase, CRUD, numérotation, journal |
-| `scripts/agenda_google_webapp.gs` | pont Apps Script (dans le compte Google de Jordan) — procédure en tête de fichier |
 | `scripts/print_devis.ts` | rendu HTML du devis hors navigateur (esbuild + Chromium → PDF) |
 | `dashboard/` | prototype HTML du dashboard (`plan.md` = intent, tokens de marque) — **non déployé** |
 | `docs/annexes/` | notes d'idées de revenus — non publiées |
@@ -45,7 +43,7 @@ npm run lint
 ## Base de données
 
 Tables : `clients`, `projets`, `taches`, `devis`, `devis_lignes`, `factures`,
-`factures_lignes`, `planning_events`, `settings`, `activites`, `integrations`.
+`factures_lignes`, `planning_events`, `settings`, `activites`.
 
 - **RLS** : une seule policy `allow_authenticated` sur chaque table — tout utilisateur connecté
   lit et écrit tout. La clé *anon* seule ne suffit pas, il faut une session.
@@ -54,6 +52,9 @@ Tables : `clients`, `projets`, `taches`, `devis`, `devis_lignes`, `factures`,
 - **TVA = 0** : franchise en base. La mention « TVA non applicable, art. 293 B du CGI » est
   dans le template PDF. Ne pas remettre 20 %.
 - **Journal** : toute action d'agent écrit une ligne dans `activites`.
+- **Planning** : le calendrier affiche les `planning_events` du mois **et** les `taches` dont
+  l'échéance tombe ce jour-là (en retard = rouge, terminées = barrées). La fiche ouverte depuis
+  le planning ne modifie que le statut ; création et édition des tâches restent sur la page Tâches.
 
 Le connecteur agent, le rendu PDF et les règles métier sont détaillés dans la skill
 `lagence-de-scott-crm`.
@@ -68,10 +69,6 @@ Le connecteur agent, le rendu PDF et les règles métier sont détaillés dans l
 5. Les clés du build vivent dans les secrets GitHub Actions, pas en local : un `npm run build`
    local produit un site sans Supabase configuré.
 6. Fichiers parasites à ignorer : `*.artifact.json`.
-7. **Agenda** : le planning du dashboard est un pont vers **Google Agenda** (`src/admin/agenda.ts`
-   + `scripts/agenda_google_webapp.gs`). L'URL `/exec` et son code secret vivent **uniquement**
-   dans la table Supabase `integrations` : jamais dans le dépôt (public), jamais dans un brief ni
-   dans le chat. `planning_events` ne sert plus qu'aux jalons internes (échéances projet/facture).
 
 ## Pièges connus
 
