@@ -50,18 +50,23 @@ class CrmError(RuntimeError):
 
 
 def _load_env() -> dict[str, str]:
-    """Variables d'environnement d'abord (cron), puis le fichier de secrets."""
+    """Variables d'environnement d'abord (cron), puis le fichier de secrets.
+
+    Le fichier est lu **variable par variable** : l'environnement peut n'en fournir
+    qu'une partie (un shell qui a exporté le mot de passe mais pas la clé TOTP), et un
+    repli conditionné à la seule présence du mot de passe laisserait alors la clé TOTP
+    introuvable — le connecteur resterait en aal1 sans rien dire.
+    """
     env = dict(os.environ)
-    if not env.get("SUPABASE_AGENT_PASSWORD"):
-        for path in SECRETS_FILES:
-            if not path.exists():
+    for path in SECRETS_FILES:
+        if not path.exists():
+            continue
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
                 continue
-            for line in path.read_text().splitlines():
-                line = line.strip()
-                if not line or line.startswith("#") or "=" not in line:
-                    continue
-                key, value = line.split("=", 1)
-                env.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+            key, value = line.split("=", 1)
+            env.setdefault(key.strip(), value.strip().strip('"').strip("'"))
     missing = [k for k in ("SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_AGENT_EMAIL",
                            "SUPABASE_AGENT_PASSWORD") if not env.get(k)]
     if missing:
