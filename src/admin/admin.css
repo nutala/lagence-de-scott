@@ -266,3 +266,11 @@
 .admin-root *,.admin-root *::before,.admin-root *::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}
 .admin-root .kanban-card:hover{transform:none}
 }
+
+/* --- Double authentification (2FA) --- */
+.admin-root .mfa-note{font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 12px}
+.admin-root .mfa-statut{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--success);margin:0 0 8px}
+.admin-root .mfa-statut--off{color:var(--muted-dim)}
+.admin-root .mfa-qr{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;margin:0 0 18px}
+.admin-root .mfa-qr img{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:8px;flex:0 0 auto}
+.admin-root .mfa-secret{display:inline-block;font-family:var(--font-body);font-size:12.5px;letter-spacing:.06em;background:var(--surface-raised);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;word-break:break-all;max-width:280px;color:var(--fg)}

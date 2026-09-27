@@ -4,18 +4,37 @@ import { isSupabaseConfigured, supabase, type Session } from './supabaseClient';
 import { AdminDataProvider } from './AdminDataContext';
 import AdminShell from './AdminShell';
 import Login from './Login';
+import MfaChallenge from './MfaChallenge';
+import { getMfaState, type MfaState } from './mfa';
 import { Loading } from './components';
 
 export default function AdminApp() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const [mfa, setMfa] = useState<MfaState | undefined>(undefined);
 
   useEffect(() => {
     if (!supabase) return;
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    let actif = true;
+    const chargerMfa = () => {
+      getMfaState().then((etat) => {
+        if (actif) setMfa(etat);
+      });
+    };
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      if (data.session) chargerMfa();
+    });
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
-    return () => subscription.unsubscribe();
+    } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+      if (s) chargerMfa();
+      else setMfa(undefined);
+    });
+    return () => {
+      actif = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (!isSupabaseConfigured) {
@@ -36,6 +55,22 @@ export default function AdminApp() {
     return (
       <div className="admin-root">
         <Login />
+      </div>
+    );
+  }
+  if (mfa === undefined) {
+    return (
+      <div className="admin-root">
+        <Loading label="Vérification de la sécurité…" />
+      </div>
+    );
+  }
+  // Facteur vérifié présent mais session encore en aal1 : on exige le code TOTP
+  // avant d'afficher quoi que ce soit (vaut aussi pour une session restaurée).
+  if (mfa.needsChallenge) {
+    return (
+      <div className="admin-root">
+        <MfaChallenge onVerified={() => getMfaState().then(setMfa)} />
       </div>
     );
   }

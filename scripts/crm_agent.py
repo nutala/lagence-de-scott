@@ -8,7 +8,10 @@ interroge PostgREST. Les règles RLS restent appliquées — aucune clé service
 
 Identifiants : SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_AGENT_EMAIL /
 SUPABASE_AGENT_PASSWORD, lus depuis la variable d'environnement si présente,
-sinon depuis le fichier de secrets de Hermes.
+sinon depuis le fichier de secrets de Hermes. Si le compte porte un facteur TOTP
+confirmé, ajouter SUPABASE_AGENT_TOTP_SECRET (la clé affichée à l'enrôlement) :
+le module relève alors le défi pour passer en aal2 — obligatoire dès que la base
+exige la double authentification.
 
 Usage CLI (lecture seule) :
     python3 scripts/crm_agent.py check
@@ -18,10 +21,15 @@ Usage CLI (lecture seule) :
 """
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
 import json
 import os
 import pathlib
+import struct
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -68,7 +76,7 @@ _TOKEN: str | None = None
 
 
 def login(force: bool = False) -> str:
-    """JWT du compte agent (mémorisé pour la durée du process)."""
+    """JWT du compte agent (mémorisé pour la durée du process), relevé en aal2 si besoin."""
     global _TOKEN
     if _TOKEN and not force:
         return _TOKEN
@@ -80,7 +88,78 @@ def login(force: bool = False) -> str:
     if status >= 300 or not isinstance(body, dict):
         raise CrmError(status, json.dumps(body) if not isinstance(body, str) else body)
     _TOKEN = body["access_token"]
+    relever_defi_totp()
     return _TOKEN
+
+
+def _aal(jeton: str) -> str:
+    """Niveau d'assurance porté par le JWT : « aal1 » (mot de passe seul) ou « aal2 »."""
+    charge = jeton.split(".")[1]
+    charge += "=" * ((4 - len(charge) % 4) % 4)
+    try:
+        return json.loads(base64.urlsafe_b64decode(charge)).get("aal", "")
+    except Exception:  # noqa: BLE001 — un JWT illisible ne doit pas masquer l'erreur d'appel
+        return ""
+
+
+def _code_totp(secret: str, instant: float | None = None) -> str:
+    """Code TOTP (RFC 6238 : SHA1, 6 chiffres, pas de 30 s) — bibliothèque standard seule."""
+    cle = base64.b32decode(secret.upper() + "=" * ((8 - len(secret) % 8) % 8))
+    compteur = int((instant if instant is not None else time.time()) // 30)
+    empreinte = hmac.new(cle, struct.pack(">Q", compteur), hashlib.sha1).digest()
+    decalage = empreinte[-1] & 0x0F
+    valeur = struct.unpack(">I", empreinte[decalage:decalage + 4])[0] & 0x7FFFFFFF
+    return str(valeur % 10**6).zfill(6)
+
+
+def _attendre_fenetre_suivante() -> None:
+    """Un code TOTP vaut 30 s : après un échec, on attend la fenêtre suivante."""
+    reste = 30 - (time.time() % 30)
+    time.sleep(reste + 1)
+
+
+def relever_defi_totp(force: bool = False) -> None:
+    """Passe la session en aal2 quand le compte porte un facteur TOTP confirmé.
+
+    La base peut exiger `aal` = « aal2 » (voir supabase/migrations/…exiger_aal2.sql) :
+    un simple mot de passe ne suffit alors plus, même pour un script. Sans
+    SUPABASE_AGENT_TOTP_SECRET, on ne relève rien : c'est l'appel API qui échouera,
+    avec un message explicite plutôt qu'un échec silencieux ici.
+    """
+    global _TOKEN
+    if not _TOKEN or (_aal(_TOKEN) == "aal2" and not force):
+        return
+    secret = (_ENV.get("SUPABASE_AGENT_TOTP_SECRET") or "").strip()
+    if not secret:
+        return
+    status, profil = _request("GET", "/auth/v1/user")
+    if status >= 300 or not isinstance(profil, dict):
+        raise CrmError(status, json.dumps(profil) if not isinstance(profil, str) else profil)
+    # /auth/v1/factors répond 405 sur ce projet : les facteurs vivent dans /auth/v1/user
+    facteurs = [f for f in profil.get("factors") or []
+                if f.get("factor_type") == "totp" and f.get("status") == "verified"]
+    if not facteurs:
+        return
+    facteur_id = facteurs[0]["id"]
+    derniere_erreur: tuple[int, Any] = (0, "défi TOTP non relevé")
+    for tentative in range(2):
+        status, defi = _request("POST", f"/auth/v1/factors/{facteur_id}/challenge", {})
+        if status < 300 and isinstance(defi, dict) and defi.get("id"):
+            status, verif = _request(
+                "POST", f"/auth/v1/factors/{facteur_id}/verify",
+                {"challenge_id": defi["id"], "code": _code_totp(secret)},
+            )
+            if status < 300 and isinstance(verif, dict) and verif.get("access_token"):
+                _TOKEN = verif["access_token"]
+                return
+            derniere_erreur = (status, verif)
+        else:
+            derniere_erreur = (status, defi)
+        if tentative == 0:
+            _attendre_fenetre_suivante()
+    status, corps = derniere_erreur
+    raise CrmError(status, "défi TOTP refusé — vérifier SUPABASE_AGENT_TOTP_SECRET : "
+                           + (json.dumps(corps) if not isinstance(corps, str) else corps))
 
 
 def _request(method: str, path: str, payload: Any = None, *, headers: dict | None = None,
