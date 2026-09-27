@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { KeyRound, ArrowRight } from 'lucide-react';
 import { supabase } from './supabaseClient';
+import AuthLayout from './AuthLayout';
 import { getMfaState, verifyTotp, messageMfa } from './mfa';
 
 /**
@@ -41,42 +42,59 @@ export default function MfaChallenge({ onVerified }: { onVerified: () => void })
   };
 
   return (
-    <div className="login-page">
-      <form className="login-card" onSubmit={handleSubmit}>
-        <ShieldCheck size={34} strokeWidth={1.4} style={{ color: 'var(--accent)' }} />
-        <h1 className="login-title">Double authentification</h1>
-        <p className="login-sub">
-          Saisissez le code à 6 chiffres affiché par votre application d’authentification (2FAS,
-          Google Authenticator…).
+    <AuthLayout
+      titre="Vérification."
+      texte="Un dernier code et vous retrouvez votre tableau de bord, vos clients et votre planning."
+      puces={['Code à 6 chiffres', 'Valable 30 secondes', '2FAS · Google Authenticator']}
+      note="Connexion protégée par double authentification"
+    >
+      <form onSubmit={handleSubmit}>
+        <span className="auth-badge auth-badge-icone">
+          <KeyRound size={26} strokeWidth={1.6} aria-hidden="true" />
+        </span>
+        <h1 className="auth-titre">Double authentification</h1>
+        <p className="auth-sous">
+          Saisissez le code à 6 chiffres affiché par votre application d'authentification.
         </p>
+
         {error && <div className="login-error" role="alert">{error}</div>}
-        <div className="form-group">
+
+        <div className="auth-champ">
           <label htmlFor="mfa-code">Code de vérification</label>
-          <input
-            id="mfa-code"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            pattern="[0-9]{6}"
-            maxLength={6}
-            placeholder="123456"
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-            autoFocus
-            required
-          />
+          <div className="auth-input auth-code">
+            <input
+              id="mfa-code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              placeholder="000000"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+              autoFocus
+              required
+            />
+          </div>
         </div>
-        <button
-          type="submit"
-          className="btn btn-primary"
-          style={{ width: '100%', justifyContent: 'center' }}
-          disabled={loading || code.length !== 6}
-        >
-          <ShieldCheck /> {loading ? 'Vérification…' : 'Valider'}
+
+        <button type="submit" className="auth-envoi" disabled={loading || code.length !== 6}>
+          <span>{loading ? 'Vérification…' : 'Valider'}</span>
+          <ArrowRight size={18} aria-hidden="true" />
         </button>
-        <p className="login-hint">
-          Accès refusé ? <a href="#" onClick={(e) => { e.preventDefault(); deconnexion(); }}>Se déconnecter</a>
+
+        <p className="auth-oublie">
+          Ce n'est pas vous ?{' '}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              deconnexion();
+            }}
+          >
+            Se déconnecter
+          </a>
         </p>
       </form>
-    </div>
+    </AuthLayout>
   );
 }

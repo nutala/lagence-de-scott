@@ -211,15 +211,10 @@
 .admin-root .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:14px 18px;box-shadow:var(--shadow-lg);z-index:120;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;animation:adm-fade-up .2s ease;max-width:360px}
 .admin-root .toast svg{width:18px;height:18px;color:var(--success);flex-shrink:0}
 
-.admin-root .login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
-.admin-root .login-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:40px 36px;box-shadow:var(--shadow-lg);animation:adm-scale-in .25s ease}
-.admin-root .login-logo{width:64px;height:64px;border-radius:var(--radius);object-fit:contain;margin-bottom:18px}
-.admin-root .login-title{font-family:var(--font-display);font-weight:700;font-size:22px;margin-bottom:6px}
-.admin-root .login-sub{color:var(--muted);font-size:14px;margin-bottom:28px}
+/* message d'erreur partage par les deux ecrans d'authentification */
 .admin-root .login-error{color:var(--danger);background:var(--danger-surface);font-size:13px;font-weight:500;padding:10px 14px;border-radius:var(--radius);margin-bottom:16px}
-.admin-root .login-hint{color:var(--muted-dim);font-size:12px;margin-top:20px;text-align:center;line-height:1.5}
 
-/* ---- Page de connexion : deux volets (marque à gauche, formulaire à droite) ---- */
+/* ---- Écrans d'authentification : deux volets (marque à gauche, formulaire à droite) ---- */
 .admin-root .auth-page{position:relative;flex:1;min-height:100vh;display:grid;grid-template-columns:minmax(360px,42%) 1fr;background:#08162a;overflow:auto}
 /* photo plein cadre, nette : celle qu'on voit derriere et autour du formulaire, y compris sur mobile */
 .admin-root .auth-page::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
@@ -260,6 +255,10 @@
 .admin-root .auth-badge{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;margin:0 auto 18px;
   background:var(--accent-surface);border:1px solid rgba(202,110,13,.32)}
 .admin-root .auth-badge img{width:36px;height:36px;object-fit:contain}
+.admin-root .auth-badge-icone{color:var(--accent)}
+.admin-root .auth-code input{padding:13px 16px;text-align:center;text-indent:.42em;letter-spacing:.42em;
+  font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.admin-root .auth-code input::placeholder{color:#4a5b70;letter-spacing:.42em}
 .admin-root .auth-titre{font-family:var(--font-display);font-weight:700;font-size:27px;letter-spacing:-.01em;text-align:center}
 .admin-root .auth-sous{color:var(--muted);font-size:14px;text-align:center;margin:8px 0 26px}
 .admin-root .auth-champ{margin-bottom:15px}
@@ -278,6 +277,8 @@
 .admin-root .auth-envoi:hover:not(:disabled){background:var(--accent-hover);transform:translateY(-1px);box-shadow:0 6px 18px rgba(202,110,13,.28)}
 .admin-root .auth-envoi:disabled{opacity:.6;cursor:not-allowed}
 .admin-root .auth-oublie{margin-top:22px;padding-top:18px;border-top:1px solid var(--border);color:var(--muted);font-size:13px;text-align:center;line-height:1.5}
+.admin-root .auth-oublie a{color:var(--accent);font-weight:500}
+.admin-root .auth-oublie a:hover{color:var(--accent-hover);text-decoration:underline}
 .admin-root .auth-note{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:20px;
   color:var(--muted-dim);font-size:12px;text-align:center}
 @media (max-width:1024px){
