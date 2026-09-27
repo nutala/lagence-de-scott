@@ -219,6 +219,69 @@
 .admin-root .login-error{color:var(--danger);background:var(--danger-surface);font-size:13px;font-weight:500;padding:10px 14px;border-radius:var(--radius);margin-bottom:16px}
 .admin-root .login-hint{color:var(--muted-dim);font-size:12px;margin-top:20px;text-align:center;line-height:1.5}
 
+/* ---- Page de connexion : deux volets (marque à gauche, formulaire à droite) ---- */
+.admin-root .auth-page{flex:1;min-height:100vh;display:grid;grid-template-columns:minmax(360px,42%) 1fr;background:var(--bg);overflow:auto}
+.admin-root .auth-visual{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:40px;padding:44px 46px;
+  background:linear-gradient(165deg,#0c2340 0%,#08162a 46%,#040a12 100%);border-right:1px solid var(--border)}
+.admin-root .auth-visual::before{content:'';position:absolute;top:-240px;right:-260px;width:680px;height:680px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(202,110,13,.30),rgba(202,110,13,0) 66%)}
+.admin-root .auth-visual::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:.14;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.admin-root .auth-mark{position:absolute;right:-7%;bottom:-8%;width:62%;max-width:520px;opacity:.11;pointer-events:none}
+.admin-root .auth-modules{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;list-style:none}
+.admin-root .auth-modules li{font-size:12.5px;letter-spacing:.04em;color:var(--muted);border:1px solid var(--border-light);border-radius:999px;padding:5px 13px}
+.admin-root .auth-brand{position:relative;z-index:1;display:flex;align-items:center;gap:14px}
+.admin-root .auth-brand img{width:52px;height:52px;object-fit:contain;flex-shrink:0}
+.admin-root .auth-brand-nom{font-family:var(--font-display);font-weight:600;font-size:17px;line-height:1.2}
+.admin-root .auth-brand-nom small{display:block;font-weight:400;font-size:11.5px;letter-spacing:.05em;color:var(--muted);margin-top:4px}
+.admin-root .auth-accueil{position:relative;z-index:1;max-width:32ch}
+.admin-root .auth-accueil-titre{font-family:var(--font-display);font-weight:700;font-size:42px;line-height:1.08;letter-spacing:-.02em}
+.admin-root .auth-accueil-titre::after{content:'';display:block;width:56px;height:3px;margin:20px 0 0;border-radius:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-hover))}
+.admin-root .auth-accueil-texte{color:var(--muted);font-size:15.5px;line-height:1.6;margin-top:18px}
+.admin-root .auth-copie{position:relative;z-index:1;color:var(--muted-dim);font-size:12px}
+.admin-root .auth-form{display:grid;place-items:center;padding:48px 24px}
+.admin-root .auth-col{width:100%;max-width:430px}
+.admin-root .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:38px 36px 30px;box-shadow:var(--shadow-lg);animation:adm-scale-in .25s ease}
+.admin-root .auth-badge{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;margin:0 auto 18px;
+  background:var(--accent-surface);border:1px solid rgba(202,110,13,.32)}
+.admin-root .auth-badge img{width:36px;height:36px;object-fit:contain}
+.admin-root .auth-titre{font-family:var(--font-display);font-weight:700;font-size:27px;letter-spacing:-.01em;text-align:center}
+.admin-root .auth-sous{color:var(--muted);font-size:14px;text-align:center;margin:8px 0 26px}
+.admin-root .auth-champ{margin-bottom:15px}
+.admin-root .auth-champ label{display:block;font-size:12.5px;font-weight:500;letter-spacing:.02em;color:var(--muted);margin-bottom:7px}
+.admin-root .auth-input{position:relative;display:flex;align-items:center}
+.admin-root .auth-input input{width:100%;padding:13px 44px;border-radius:11px;background:var(--surface-raised);border:1px solid var(--border);transition:border-color .2s,box-shadow .2s}
+.admin-root .auth-input input::placeholder{color:#a5b4c6}
+.admin-root .auth-input input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-surface)}
+.admin-root .auth-ico{position:absolute;left:14px;color:var(--muted-dim);pointer-events:none;transition:color .2s}
+.admin-root .auth-input:focus-within .auth-ico{color:var(--accent)}
+.admin-root .auth-oeil{position:absolute;right:7px;width:34px;height:34px;display:grid;place-items:center;border-radius:9px;color:var(--muted);transition:color .15s,background .15s}
+.admin-root .auth-oeil:hover{color:var(--fg);background:var(--surface-hover)}
+.admin-root .auth-envoi{width:100%;margin-top:9px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 18px;border-radius:11px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;
+  transition:background .2s,transform .15s,box-shadow .2s}
+.admin-root .auth-envoi:hover:not(:disabled){background:var(--accent-hover);transform:translateY(-1px);box-shadow:0 6px 18px rgba(202,110,13,.28)}
+.admin-root .auth-envoi:disabled{opacity:.6;cursor:not-allowed}
+.admin-root .auth-oublie{margin-top:22px;padding-top:18px;border-top:1px solid var(--border);color:var(--muted);font-size:13px;text-align:center;line-height:1.5}
+.admin-root .auth-note{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:20px;
+  color:var(--muted-dim);font-size:12px;text-align:center}
+@media (max-width:1024px){
+  .admin-root .auth-page{grid-template-columns:1fr}
+  .admin-root .auth-visual{flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;padding:22px 26px;border-right:none;border-bottom:1px solid var(--border)}
+  .admin-root .auth-mark,.admin-root .auth-accueil,.admin-root .auth-copie{display:none}
+  .admin-root .auth-form{padding:36px 24px 44px}
+}
+@media (max-width:520px){
+  .admin-root .auth-visual{padding:18px 20px}
+  .admin-root .auth-brand img{width:42px;height:42px}
+  .admin-root .auth-brand-nom{font-size:15.5px}
+  .admin-root .auth-form{padding:26px 16px 36px}
+  .admin-root .auth-card{padding:30px 22px 24px;border-radius:18px}
+  .admin-root .auth-titre{font-size:23px}
+  .admin-root .auth-input input{font-size:16px;padding:14px 42px}
+}
+
 .admin-root .setup-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
 .admin-root .setup-card{width:100%;max-width:640px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:40px;box-shadow:var(--shadow-lg)}
 .admin-root .setup-card h2{font-family:var(--font-display);font-weight:700;font-size:22px;margin-bottom:12px}
