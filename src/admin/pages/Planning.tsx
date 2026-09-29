@@ -90,7 +90,7 @@ export default function PlanningPage() {
               >
                 <div className="cal-day-num">{c.day}</div>
                 {evts.map((e) => (
-                  <div key={e.id} className={`cal-event ${e.type}`} onClick={(ev) => { ev.stopPropagation(); setModal({ event: e }); }}>
+                  <div key={e.id} className={`cal-event ${e.type}`} title={e.label} onClick={(ev) => { ev.stopPropagation(); setModal({ event: e }); }}>
                     {e.label}
                   </div>
                 ))}
@@ -109,7 +109,7 @@ export default function PlanningPage() {
                   );
                 })}
                 {cellTaches.length > MAX_TACHES_CASE && (
-                  <div className="cal-more">+{cellTaches.length - MAX_TACHES_CASE} tâche(s)</div>
+                  <div className="cal-more" title={cellTaches.slice(MAX_TACHES_CASE).map((t) => t.titre).join(' · ')}>+{cellTaches.length - MAX_TACHES_CASE} tâche(s)</div>
                 )}
               </div>
             );
